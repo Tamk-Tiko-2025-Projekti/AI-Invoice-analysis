@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import ShowData from './ShowData';
 
 // At the moment uses axios to simulate uploading file to a backend.
 const FileUploader = () => {
@@ -51,13 +52,11 @@ const FileUploader = () => {
         <p>File is uploading...</p>
       )}
 
-      {status === "success" && (
-        <p>File uploaded succesfully!</p>
-      )}
-
       {status === "error" && (
         <p>Error uploading the file</p>
       )}
+
+      <ShowData status={status}/>
     </div>
   );
 }

@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import './App.css'
-import FileSelection from './FileUploader'
+import FileUploader from './FileUploader'
 
 function App() {
   return (
@@ -8,11 +7,10 @@ function App() {
       <div>
         <h1>To do:</h1>
         <ul>
-          <li>Make fileuploader upload to our backend</li>
-          <li>Make another page to fetch the data from backend and showcase it</li>
+          <li>Make fileuploader upload to our backend: localhost:3000</li>
         </ul>
       </div>
-      <FileSelection/>
+      <FileUploader/>
     </>
   )
 }
