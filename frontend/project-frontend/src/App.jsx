@@ -5,10 +5,9 @@ function App() {
   return (
     <>
       <div>
-        <h1>To do:</h1>
-        <ul>
-          <li>Make fileuploader upload to our backend: localhost:3000</li>
-        </ul>
+        <h1>Laskutuksen automatisointi</h1>
+        <h2>Hyväksyy vain kuvia taikka pdf tiedostoja</h2>
+        <h2>Valitse tiedosto, paina upload, saa JSON dataa</h2>
       </div>
       <FileUploader/>
     </>

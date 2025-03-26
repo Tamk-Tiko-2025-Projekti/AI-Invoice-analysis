@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import ShowData from './ShowData';
 
-// At the moment uses axios to simulate uploading file to a backend.
 const FileUploader = () => {
   const [file, setFile] = useState(null)
   const [status, setStatus] = useState("idle")
@@ -22,10 +20,9 @@ const FileUploader = () => {
     formData.append('file', file);
 
     try {
-      await axios.post("https://httpbin.org/post", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await fetch("http://localhost:3000/api", {
+        method: 'POST',
+        body: formData
       });
 
       setStatus("success");
@@ -36,7 +33,8 @@ const FileUploader = () => {
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} />
+      <input type="file" onChange={handleFileChange}
+      accept="image/*, application/pdf"/>
       {file && (
         <div>
           <p>File name: {file.name}</p>
