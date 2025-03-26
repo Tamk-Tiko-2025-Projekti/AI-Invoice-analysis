@@ -28,7 +28,7 @@ const FileUploader = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setData(result);
+        setData(result.response);
         setStatus("success");
       } else {
         setData([]);
