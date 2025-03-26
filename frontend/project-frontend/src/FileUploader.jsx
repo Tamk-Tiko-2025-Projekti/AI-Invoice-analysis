@@ -4,6 +4,7 @@ import ShowData from './ShowData';
 const FileUploader = () => {
   const [file, setFile] = useState(null)
   const [status, setStatus] = useState("idle")
+  const [data, setData] = useState([])
 
   function handleFileChange(e) {
     if (e.target.files) {
@@ -20,12 +21,19 @@ const FileUploader = () => {
     formData.append('file', file);
 
     try {
-      await fetch("http://localhost:3000/", {
+      const response = await fetch("http://localhost:3000/", {
         method: 'POST',
         body: formData
       });
 
-      setStatus("success");
+      if (response.ok) {
+        const result = await response.json();
+        setData(result);
+        setStatus("success");
+      } else {
+        setData([]);
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
@@ -34,7 +42,7 @@ const FileUploader = () => {
   return (
     <div>
       <input type="file" onChange={handleFileChange}
-      accept="image/*, application/pdf"/>
+      accept="image/*"/>
       {file && (
         <div>
           <p>File name: {file.name}</p>
@@ -54,7 +62,12 @@ const FileUploader = () => {
         <p>Error uploading the file</p>
       )}
 
-      <ShowData status={status}/>
+      {status === "success" && (
+        <div>
+          <h2>JSON data:</h2>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 }
