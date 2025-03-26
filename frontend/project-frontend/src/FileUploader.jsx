@@ -20,7 +20,7 @@ const FileUploader = () => {
     formData.append('file', file);
 
     try {
-      await fetch("http://localhost:3000/api", {
+      await fetch("http://localhost:3000/", {
         method: 'POST',
         body: formData
       });
