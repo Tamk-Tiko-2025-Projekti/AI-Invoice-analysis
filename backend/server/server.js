@@ -41,9 +41,15 @@ app.post('/', upload.single('image'), async (req, res) => {
     console.log(`✅ Image saved at: ${imagePath}`);
 
     console.log("🚀 Starting Python script...");
+
+    let dots = '.'
+    const statusInterval = setInterval(() => {
+      console.log(`Processing${dots}`)
+      dots = dots.length > 3 ? '.' : dots + '.';
+    }, 1000)
     
     // Starts the python process
-    const pythonProcess = spawn('python3', ['testi.py', imagePath]);
+    const pythonProcess = spawn('python', ['testi.py', imagePath]);
 
     let result = '';
     let error = '';
@@ -60,6 +66,8 @@ app.post('/', upload.single('image'), async (req, res) => {
 
     // Handle process exit
     pythonProcess.on('close', (code) => {
+      clearInterval(statusInterval);
+      console.log('🛑 Python process closed');
       if (code !== 0) {
         console.error(`❌ Python error: ${error}`);
         return res.status(500).json({ error: 'Image processing failed', details: error.trim() });
@@ -76,6 +84,7 @@ app.post('/', upload.single('image'), async (req, res) => {
 
     // Handle execution errors
     pythonProcess.on('error', (err) => {
+      clearInterval(statusInterval);
       console.error('🚨 Python execution error:', err);
       res.status(500).json({ error: 'Failed to start Python script', details: err.message });
     });
