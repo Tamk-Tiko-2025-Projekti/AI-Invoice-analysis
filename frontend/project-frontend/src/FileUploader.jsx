@@ -18,7 +18,7 @@ const FileUploader = () => {
     setStatus("uploading")
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('image', file);
 
     try {
       const response = await fetch("http://localhost:3000/", {
@@ -28,7 +28,7 @@ const FileUploader = () => {
 
       if (response.ok) {
         const result = await response.json();
-        setData(result);
+        setData(result.response);
         setStatus("success");
       } else {
         setData([]);
