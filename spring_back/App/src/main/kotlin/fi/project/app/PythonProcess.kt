@@ -9,6 +9,7 @@ class PythonProcess {
     companion object {
         fun runScript(file: MultipartFile): String {
             val tempFile = saveFile(file)
+            println("Temporary file created: ${tempFile.absolutePath}")
             try {
 //                val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath)
 //                processBuilder.redirectErrorStream(true)
@@ -19,14 +20,17 @@ class PythonProcess {
 //
 //                return output
                 return """
-                    {
-                        "content": "Hello from Python!"
-                    }
-                """.trimIndent()
+                   {
+                   "content": {
+                     "text": "This is a test response from the Python script."
+                        }
+                   }
+               """.trimIndent()
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw RuntimeException("Error running Python script: ${e.message}")
             } finally {
+                println("Deleting temporary file: ${tempFile.absolutePath}")
                 tempFile.delete()
             }
         }

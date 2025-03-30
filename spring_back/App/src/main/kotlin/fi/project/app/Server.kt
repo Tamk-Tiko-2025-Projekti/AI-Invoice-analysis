@@ -22,6 +22,7 @@ class Server {
     fun post(@RequestParam("image") file: MultipartFile): ResponseEntity<String> {
         println("Received file: ${file.originalFilename}")
         try {
+            println("Running Python script...")
             val output = PythonProcess.runScript(file)
             println("Python script output: $output")
             //val jsonResponse = ObjectMapper().readTree(output)
