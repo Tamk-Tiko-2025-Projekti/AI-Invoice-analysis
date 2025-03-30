@@ -10,14 +10,19 @@ class PythonProcess {
         fun runScript(file: MultipartFile): String {
             val tempFile = saveFile(file)
             try {
-                val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath)
-                processBuilder.redirectErrorStream(true)
-                val process = processBuilder.start()
-
-                val output = BufferedReader(InputStreamReader(process.inputStream)).readText()
-                process.waitFor()
-
-                return output
+//                val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath)
+//                processBuilder.redirectErrorStream(true)
+//                val process = processBuilder.start()
+//
+//                val output = BufferedReader(InputStreamReader(process.inputStream)).readText()
+//                process.waitFor()
+//
+//                return output
+                return """
+                    {
+                        "content": "Hello from Python!"
+                    }
+                """.trimIndent()
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw RuntimeException("Error running Python script: ${e.message}")
