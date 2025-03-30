@@ -20,12 +20,12 @@ class PythonProcess {
 //
 //                return output
                 return """
-                   {
-                   "content": {
-                     "text": "This is a test response from the Python script."
+                    {
+                        "content": {
+                            "text": "This is a test response from the Python script."
                         }
-                   }
-               """.trimIndent()
+                    }
+                """.trimIndent()
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw RuntimeException("Error running Python script: ${e.message}")
