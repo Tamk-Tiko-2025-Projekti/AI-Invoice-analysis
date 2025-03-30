@@ -18,9 +18,14 @@ class Server {
     fun hello(): String {
         return "Hello World!"
     }
+
     @PostMapping("/")
-    fun post(@RequestParam("image") file: MultipartFile): ResponseEntity<String> {
+    fun post(
+        @RequestParam("image") file: MultipartFile,
+        @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean
+    ): ResponseEntity<String> {
         println("Received file: ${file.originalFilename}")
+        println("Test run: $testRun")
         try {
             println("Running Python script...")
             val output = PythonProcess.runScript(file)
