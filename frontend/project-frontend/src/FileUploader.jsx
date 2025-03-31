@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import ShowData from './ShowData';
 
 const FileUploader = () => {
-  const [file, setFile] = useState(null)
-  const [status, setStatus] = useState("idle")
-  const [data, setData] = useState([])
+  const [file, setFile] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [data, setData] = useState([]);
 
   function handleFileChange(e) {
     if (e.target.files) {
@@ -15,34 +15,33 @@ const FileUploader = () => {
   async function handleFileUpload() {
     if (!file) return;
 
-    setStatus("uploading")
+    setStatus('uploading');
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('image', file);
 
     try {
-      const response = await fetch("http://localhost:3000/", {
+      const response = await fetch('http://localhost:8080/', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
-
       if (response.ok) {
         const result = await response.json();
-        setData(result.response);
-        setStatus("success");
+        console.log('Result:', result);
+        setData(result);
+        setStatus('success');
       } else {
         setData([]);
-        setStatus("error");
+        setStatus('error');
       }
     } catch {
-      setStatus("error");
+      setStatus('error');
     }
   }
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange}
-      accept="image/*"/>
+      <input type="file" onChange={handleFileChange} accept="image/*" />
       {file && (
         <div>
           <p>File name: {file.name}</p>
@@ -50,19 +49,15 @@ const FileUploader = () => {
         </div>
       )}
 
-      {file && status !== "uploading" && (
+      {file && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
       )}
 
-      {status === "uploading" && (
-        <p>File is uploading...</p>
-      )}
+      {status === 'uploading' && <p>File is uploading...</p>}
 
-      {status === "error" && (
-        <p>Error uploading the file</p>
-      )}
+      {status === 'error' && <p>Error uploading the file</p>}
 
-      {status === "success" && (
+      {status === 'success' && (
         <div>
           <h2>JSON data:</h2>
           <pre>{JSON.stringify(data, null, 2)}</pre>
@@ -70,6 +65,6 @@ const FileUploader = () => {
       )}
     </div>
   );
-}
+};
 
 export default FileUploader;
