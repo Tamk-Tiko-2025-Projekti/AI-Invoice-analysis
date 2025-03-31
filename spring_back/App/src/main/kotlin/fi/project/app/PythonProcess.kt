@@ -19,13 +19,6 @@ class PythonProcess {
                 process.waitFor()
 
                 return output
-//                return """
-//                    {
-//                        "content": {
-//                            "text": "This is a test response from the Python script."
-//                        }
-//                    }
-//                """.trimIndent()
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw RuntimeException("Error running Python script: ${e.message}")
