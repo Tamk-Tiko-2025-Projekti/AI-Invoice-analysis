@@ -7,25 +7,25 @@ import java.io.InputStreamReader
 
 class PythonProcess {
     companion object {
-        fun runScript(file: MultipartFile): String {
+        fun runScript(file: MultipartFile, testRun: Boolean): String {
             val tempFile = saveFile(file)
             println("Temporary file created: ${tempFile.absolutePath}")
             try {
-//                val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath)
-//                processBuilder.redirectErrorStream(true)
-//                val process = processBuilder.start()
-//
-//                val output = BufferedReader(InputStreamReader(process.inputStream)).readText()
-//                process.waitFor()
-//
-//                return output
-                return """
-                    {
-                        "content": {
-                            "text": "This is a test response from the Python script."
-                        }
-                    }
-                """.trimIndent()
+                val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath)
+                processBuilder.redirectErrorStream(true)
+                val process = processBuilder.start()
+
+                val output = BufferedReader(InputStreamReader(process.inputStream)).readText()
+                process.waitFor()
+
+                return output
+//                return """
+//                    {
+//                        "content": {
+//                            "text": "This is a test response from the Python script."
+//                        }
+//                    }
+//                """.trimIndent()
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw RuntimeException("Error running Python script: ${e.message}")

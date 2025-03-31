@@ -28,7 +28,7 @@ class Server {
         println("Test run: $testRun")
         try {
             println("Running Python script...")
-            val output = PythonProcess.runScript(file)
+            val output = PythonProcess.runScript(file, testRun)
             println("Python script output: $output")
             //val jsonResponse = ObjectMapper().readTree(output)
             return ResponseEntity(output, HttpStatus.OK)
