@@ -3,6 +3,10 @@ import sys
 import json
 from openai import OpenAI
 
+for (i, arg) in enumerate(sys.argv):
+	print(f"Argument {i}: {arg}")
+
+sys.exit(0)
 # Ensure an argument is passed
 if len(sys.argv) < 2:
     print("Error: No image path provided.")
