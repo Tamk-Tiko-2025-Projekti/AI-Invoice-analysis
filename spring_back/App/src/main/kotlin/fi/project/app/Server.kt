@@ -38,4 +38,24 @@ class Server {
             return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+
+    @PostMapping("/pdf")
+    fun postPDF(
+        @RequestParam("pdf") file: MultipartFile,
+        @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean,
+    ): ResponseEntity<String> {
+        println("Received file: ${file.originalFilename}")
+        println("Test run: $testRun")
+        try {
+            println("Running Python script...")
+            val output = PythonProcess.runScript(file, testRun)
+            println("Python script output: $output")
+            //val jsonResponse = ObjectMapper().readTree(output)
+            return ResponseEntity(output, HttpStatus.OK)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            //val message = ObjectMapper().createObjectNode()
+            return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
 }
