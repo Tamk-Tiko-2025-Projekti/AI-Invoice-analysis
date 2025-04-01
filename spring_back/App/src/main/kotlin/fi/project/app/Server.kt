@@ -19,8 +19,8 @@ class Server {
         return "Hello World!"
     }
 
-    @PostMapping("/")
-    fun post(
+    @PostMapping("/image")
+    fun postImage(
         @RequestParam("image") file: MultipartFile,
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean
     ): ResponseEntity<String> {
