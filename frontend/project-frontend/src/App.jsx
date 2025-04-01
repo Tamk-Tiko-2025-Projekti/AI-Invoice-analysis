@@ -1,7 +1,13 @@
 import './App.css'
 import FileUploader from './FileUploader'
+import Options from "./Options.jsx";
+import { useState } from "react";
 
 function App() {
+  const [options, setOptions] = useState({
+    testRun: false
+  })
+
   return (
     <>
       <div>
@@ -9,7 +15,8 @@ function App() {
         <h2>Hyväksyy vain kuvia</h2>
         <h2>Valitse tiedosto, paina upload, saa JSON dataa</h2>
       </div>
-      <FileUploader/>
+      <FileUploader testRun={options.testRun}/>
+      <Options options={options} setOptions={setOptions}/>
     </>
   )
 }

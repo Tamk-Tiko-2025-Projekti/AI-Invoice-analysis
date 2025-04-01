@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import ShowData from './ShowData';
 
-const FileUploader = () => {
+const FileUploader = ({ testRun }) => {
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('idle');
   const [data, setData] = useState([]);
@@ -21,7 +20,7 @@ const FileUploader = () => {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:8080/', {
+      const response = await fetch(`http://localhost:8080/?testRun=${testRun.toString()}`, {
         method: 'POST',
         body: formData,
       });
