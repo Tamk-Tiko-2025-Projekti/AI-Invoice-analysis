@@ -40,7 +40,7 @@ const FileUploader = ({ testRun }) => {
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} accept="image/*" />
+      <input type="file" onChange={handleFileChange} accept="image/*, .pdf" />
       {file && (
         <div>
           <p>File name: {file.name}</p>
