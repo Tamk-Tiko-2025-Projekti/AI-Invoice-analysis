@@ -8,8 +8,17 @@ fun convertPDFToImage(file: File) {
     val processBuilder = ProcessBuilder(
         "python",
         "./src/main/kotlin/fi/project/app/util/convertpdf.py",
-        "./temp/temp.pdf",
+        file.absolutePath,
     )
+    processBuilder.redirectErrorStream(true)
+    val process = processBuilder.start()
+    val output = process.inputStream.bufferedReader().readText()
+    process.waitFor()
+    println("Python script output: $output")
+    if (process.exitValue() != 0) {
+        println("Error converting PDF to image: $output")
+        throw RuntimeException("Error converting PDF to image: $output")
+    }
 }
 
 fun saveFile(file: MultipartFile, path: String): File {
