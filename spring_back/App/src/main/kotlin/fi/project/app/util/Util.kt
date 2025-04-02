@@ -3,7 +3,8 @@ package fi.project.app.util
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 
-fun convertToPDF() {
+fun convertPDFToImage(file: File) {
+    println("Converting PDF at ${file.absolutePath} to image...")
     val processBuilder = ProcessBuilder(
         "python",
         "./src/main/kotlin/fi/project/app/util/convertpdf.py",
