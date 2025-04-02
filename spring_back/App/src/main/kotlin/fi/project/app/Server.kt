@@ -70,18 +70,11 @@ class Server {
             return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
         } finally {
             val tempPDF = File(System.getProperty("user.dir") + "/temp/temp.pdf")
-            val tempImage: File = File(System.getProperty("user.dir") + "/temp/temp.webp")
             if (tempPDF.exists()) {
                 println("Deleting temporary PDF file: ${tempPDF.absolutePath}")
                 tempPDF.delete()
             } else {
                 println("Temporary PDF file does not exist: ${tempPDF.absolutePath}")
-            }
-            if (tempImage.exists()) {
-                println("Deleting temporary image file: ${tempImage.absolutePath}")
-                tempImage.delete()
-            } else {
-                println("Temporary image file does not exist: ${tempImage.absolutePath}")
             }
         }
     }
