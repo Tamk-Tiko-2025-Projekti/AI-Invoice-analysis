@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus
 import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import fi.project.app.util.saveFile
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.JsonNode
@@ -27,7 +28,7 @@ class Server {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
         try {
-            saveFile(file)
+            saveFile(file, "./temp")
             println("Running Python script...")
             val output = PythonProcess.runScript(file, testRun)
             println("Python script output: $output")
@@ -48,6 +49,7 @@ class Server {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
         try {
+            saveFile(file, "./temp")
             println("Running Python script...")
             val output = PythonProcess.runScript(file, testRun)
             println("Python script output: $output")
