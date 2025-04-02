@@ -30,11 +30,3 @@ class PythonProcess {
     }
 }
 
-fun saveFile(file: MultipartFile): File {
-    val path = File(System.getProperty("user.dir"))
-    /* The file is saved in the project root directory. */
-    val savedFile = File(path, file.originalFilename ?: "tempfile")
-    file.transferTo(savedFile)
-
-    return savedFile
-}
