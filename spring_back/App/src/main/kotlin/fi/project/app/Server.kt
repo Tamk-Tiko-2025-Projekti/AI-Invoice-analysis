@@ -27,6 +27,7 @@ class Server {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
         try {
+            saveFile(file)
             println("Running Python script...")
             val output = PythonProcess.runScript(file, testRun)
             println("Python script output: $output")
