@@ -8,9 +8,7 @@ import java.io.File
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import fi.project.app.util.saveFile
-
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.JsonNode
+import fi.project.app.util.convertPDFToImage
 
 @RestController
 @RequestMapping("/")
@@ -28,9 +26,9 @@ class Server {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
         try {
-            saveFile(file, "./temp")
+            val tempFile = saveFile(file, "/temp")
             println("Running Python script...")
-            val output = PythonProcess.runScript(file, testRun)
+            val output = PythonProcess.runScript(tempFile, testRun)
             println("Python script output: $output")
             //val jsonResponse = ObjectMapper().readTree(output)
             return ResponseEntity(output, HttpStatus.OK)
@@ -49,9 +47,20 @@ class Server {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
         try {
-            saveFile(file, "./temp")
-            println("Running Python script...")
-            val output = PythonProcess.runScript(file, testRun)
+            val tempFile = saveFile(file, "/temp")
+            println("Temporary file created: ${tempFile.absolutePath}")
+            println("Running PDF to image conversion...")
+            convertPDFToImage(tempFile)
+
+            val convertedFile = File(System.getProperty("user.dir") + "/temp/temp.webp")
+            println("Converted file: ${convertedFile.absolutePath}")
+            if (!convertedFile.exists()) {
+                println("Converted file does not exist: ${convertedFile.absolutePath}")
+                tempFile.delete()
+                return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+            }
+            println("Running Python script on $convertedFile at ${convertedFile.absolutePath}...")
+            val output = PythonProcess.runScript(convertedFile, testRun)
             println("Python script output: $output")
             //val jsonResponse = ObjectMapper().readTree(output)
             return ResponseEntity(output, HttpStatus.OK)
@@ -59,6 +68,21 @@ class Server {
             e.printStackTrace()
             //val message = ObjectMapper().createObjectNode()
             return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+        } finally {
+            val tempPDF = File(System.getProperty("user.dir") + "/temp/temp.pdf")
+            val tempImage: File = File(System.getProperty("user.dir") + "/temp/temp.webp")
+            if (tempPDF.exists()) {
+                println("Deleting temporary PDF file: ${tempPDF.absolutePath}")
+                tempPDF.delete()
+            } else {
+                println("Temporary PDF file does not exist: ${tempPDF.absolutePath}")
+            }
+            if (tempImage.exists()) {
+                println("Deleting temporary image file: ${tempImage.absolutePath}")
+                tempImage.delete()
+            } else {
+                println("Temporary image file does not exist: ${tempImage.absolutePath}")
+            }
         }
     }
 }
