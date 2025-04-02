@@ -13,7 +13,7 @@ export default function FileTypeHandler({ file, setFileType }) {
 
       console.log("pdf checked");
       if (checked && file.type === 'application/pdf') {
-        setFileType('PDF');
+        setFileType('pdf');
         console.log("File is pdf");
       }
     } else if (name === 'image') {
@@ -22,7 +22,7 @@ export default function FileTypeHandler({ file, setFileType }) {
 
       console.log("image checked");
       if (checked && file.type.startsWith('image/')) {
-        setFileType('Image');
+        setFileType('image');
         console.log("File is image");
       }
     }

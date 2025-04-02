@@ -9,12 +9,10 @@ const FileUploader = ({ testRun }) => {
   const [path, setPath] = useState('')
 
   useEffect(() => {
-    if (fileType === 'PDF') {
-      //Path unknown
-      //setPath(`http://localhost:8080/upload-pdf?testRun=${testRun.toString()}`);
-    } else if (fileType === 'Image') {
-      //Path unknown
-      //setPath(`http://localhost:8080/upload-image?testRun=${testRun.toString()}`);
+    if (fileType === 'pdf') {
+      setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
+    } else if (fileType === 'image') {
+      setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
     } else {
       setPath('');
     }
@@ -32,7 +30,7 @@ const FileUploader = ({ testRun }) => {
     setStatus('uploading');
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append(fileType, file);
 
     try {
       const response = await fetch(path, {
