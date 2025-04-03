@@ -67,7 +67,7 @@ const FileUploader = ({ testRun }) => {
         </div>
       )}
 
-      <FileTypeHandler file={file} setFileType={setFileType} />
+      {/*<FileTypeHandler file={file} setFileType={setFileType} />*/}
 
       {file && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
