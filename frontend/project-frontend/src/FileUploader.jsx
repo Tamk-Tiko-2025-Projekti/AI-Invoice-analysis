@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import FileTypeHandler from './FileTypeHandler';
 import DisplayData from './DisplayData';
 
 const FileUploader = ({ testRun }) => {
@@ -10,14 +9,22 @@ const FileUploader = ({ testRun }) => {
   const [path, setPath] = useState('')
 
   useEffect(() => {
-    if (fileType === 'pdf') {
-      setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
-    } else if (fileType === 'image') {
-      setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
+    if (file) {
+      if (file.type === 'application/pdf') {
+        setFileType('pdf');
+        setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
+      } else if (file.type.startsWith('image/')) {
+        setFileType('image');
+        setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
+      } else {
+        setFileType('');
+        setPath('');
+      }
     } else {
+      setFileType('');
       setPath('');
     }
-  }, [fileType, testRun]);
+  }, [file, testRun]);
 
   function handleFileChange(e) {
     if (e.target.files) {
@@ -61,8 +68,6 @@ const FileUploader = ({ testRun }) => {
           <p>Type: {file.type}</p>
         </div>
       )}
-
-      <FileTypeHandler file={file} setFileType={setFileType} />
 
       {file && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
