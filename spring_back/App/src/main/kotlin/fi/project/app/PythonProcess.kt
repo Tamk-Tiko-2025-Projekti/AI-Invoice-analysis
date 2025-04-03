@@ -7,9 +7,9 @@ import java.io.InputStreamReader
 
 class PythonProcess {
     companion object {
-        fun runScript(file: MultipartFile, testRun: Boolean): String {
-            val tempFile = saveFile(file)
-            println("Temporary file created: ${tempFile.absolutePath}")
+        fun runScript(tempFile: File, testRun: Boolean): String {
+//            val tempFile = saveFile(file)
+//            println("Temporary file created: ${tempFile.absolutePath}")
             try {
                 val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath, testRun.toString())
                 processBuilder.redirectErrorStream(true)
@@ -30,11 +30,3 @@ class PythonProcess {
     }
 }
 
-fun saveFile(file: MultipartFile): File {
-    val path = File(System.getProperty("user.dir"))
-    /* The file is saved in the project root directory. */
-    val savedFile = File(path, file.originalFilename ?: "tempfile")
-    file.transferTo(savedFile)
-
-    return savedFile
-}
