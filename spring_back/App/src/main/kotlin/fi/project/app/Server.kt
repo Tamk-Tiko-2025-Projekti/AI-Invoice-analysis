@@ -46,6 +46,7 @@ class Server {
     ): ResponseEntity<String> {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
+
         try {
             val tempFile = saveFile(file, "/temp")
             println("Temporary file created: ${tempFile.absolutePath}")
