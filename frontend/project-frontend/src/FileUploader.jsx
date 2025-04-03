@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FileTypeHandler from './FileTypeHandler';
+import DisplayData from './DisplayData';
 
 const FileUploader = ({ testRun }) => {
   const [file, setFile] = useState(null);
@@ -75,6 +76,7 @@ const FileUploader = ({ testRun }) => {
         <div>
           <h2>JSON data:</h2>
           <pre>{JSON.stringify(data, null, 2)}</pre>
+          <DisplayData data={data} />
         </div>
       )}
     </div>
