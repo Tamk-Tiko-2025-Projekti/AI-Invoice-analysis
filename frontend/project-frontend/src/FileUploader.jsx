@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import FileTypeHandler from './FileTypeHandler';
+import DisplayData from './DisplayData';
 
 const FileUploader = ({ testRun }) => {
   const [file, setFile] = useState(null);
+  const [fileType, setFileType] = useState('');
   const [status, setStatus] = useState('idle');
   const [data, setData] = useState([]);
+  const [path, setPath] = useState('')
+
+  useEffect(() => {
+    if (fileType === 'pdf') {
+      setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
+    } else if (fileType === 'image') {
+      setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
+    } else {
+      setPath('');
+    }
+  }, [fileType, testRun]);
 
   function handleFileChange(e) {
     if (e.target.files) {
@@ -12,15 +26,15 @@ const FileUploader = ({ testRun }) => {
   }
 
   async function handleFileUpload() {
-    if (!file) return;
+    if (!file || !path) return;
 
     setStatus('uploading');
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append(fileType, file);
 
     try {
-      const response = await fetch(`http://localhost:8080/image?testRun=${testRun.toString()}`, {
+      const response = await fetch(path, {
         method: 'POST',
         body: formData,
       });
@@ -40,13 +54,15 @@ const FileUploader = ({ testRun }) => {
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} accept="image/*" />
+      <input type="file" onChange={handleFileChange} accept="image/*, .pdf" />
       {file && (
         <div>
           <p>File name: {file.name}</p>
           <p>Type: {file.type}</p>
         </div>
       )}
+
+      <FileTypeHandler file={file} setFileType={setFileType} />
 
       {file && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
@@ -60,6 +76,7 @@ const FileUploader = ({ testRun }) => {
         <div>
           <h2>JSON data:</h2>
           <pre>{JSON.stringify(data, null, 2)}</pre>
+          <DisplayData data={data} />
         </div>
       )}
     </div>
