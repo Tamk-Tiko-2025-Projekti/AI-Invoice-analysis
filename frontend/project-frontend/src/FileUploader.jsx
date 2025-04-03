@@ -10,14 +10,19 @@ const FileUploader = ({ testRun }) => {
   const [path, setPath] = useState('')
 
   useEffect(() => {
-    if (fileType === 'pdf') {
+    // if (fileType === 'pdf') {
+    if (file && file.type === 'application/pdf') {
       setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
     } else if (fileType === 'image') {
+      setFileType('pdf');
+    // } else if (fileType === 'image') {
+    } else if (file && file.type.startsWith('image/')) {
       setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
+      setFileType('image');
     } else {
       setPath('');
     }
-  }, [fileType, testRun]);
+  }, [file, fileType, testRun]);
 
   function handleFileChange(e) {
     if (e.target.files) {
