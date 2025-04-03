@@ -2,12 +2,18 @@ package fi.project.app.util
 
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
+import java.util.*
 
 fun convertPDFToImage(file: File) {
     println("Converting PDF at ${file.absolutePath} to image...")
+    var pythonCommand = "python3"
+    if (System.getProperty("os.name").lowercase().contains("windows")) {
+        pythonCommand = "python"
+    }
+
     val processBuilder = ProcessBuilder(
-        "python",
-        "./src/main/kotlin/fi/project/app/util/convertpdf.py",
+        pythonCommand,
+        System.getProperty("user.dir") + "/App/src/main/kotlin/fi/project/app/util/convertpdf.py",
         file.absolutePath,
     )
     processBuilder.redirectErrorStream(true)
