@@ -20,7 +20,7 @@ const FileUploader = ({ testRun }) => {
     formData.append('image', file);
 
     try {
-      const response = await fetch(`http://localhost:8080/?testRun=${testRun.toString()}`, {
+      const response = await fetch(`http://localhost:8080/image?testRun=${testRun.toString()}`, {
         method: 'POST',
         body: formData,
       });
