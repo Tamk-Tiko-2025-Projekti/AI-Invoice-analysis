@@ -78,11 +78,7 @@ const FileUploader = ({ testRun }) => {
       {status === 'error' && <p>Error uploading the file</p>}
 
       {status === 'success' && (
-        <div>
-          <h2>JSON data:</h2>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-          <DisplayData data={data} />
-        </div>
+        <DisplayData data={data} />
       )}
     </div>
   );
