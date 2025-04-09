@@ -7,33 +7,26 @@ import kotlin.random.Random
 import java.io.IOException
 import java.nio.file.Paths
 
-fun convertPDFToImage(file: File) {
-    println("Converting PDF at ${file.absolutePath} to image...")
-    var pythonCommand = "python3"
-    if (System.getProperty("os.name").lowercase().contains("windows")) {
-        pythonCommand = "python"
-    }
-    var pathToPythonScript = ""
-    if (System.getProperty("os.name").lowercase().contains("windows")) {
-        pathToPythonScript = "./src/main/kotlin/fi/project/app/util/convertpdf.py"
-    } else {
-        pathToPythonScript = System.getProperty("user.dir") + "/App/src/main/kotlin/fi/project/app/util/convertpdf.py"
-    }
+fun convertPDFToImage(pdfFile: File) {
+    try {
+        val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
 
-    val processBuilder = ProcessBuilder(
-        pythonCommand,
-        pathToPythonScript,
-//        System.getProperty("user.dir") + "/App/src/main/kotlin/fi/project/app/util/convertpdf.py",
-        file.absolutePath,
-    )
-    processBuilder.redirectErrorStream(true)
-    val process = processBuilder.start()
-    val output = process.inputStream.bufferedReader().readText()
-    process.waitFor()
-    println("Python script output: $output")
-    if (process.exitValue() != 0) {
-        println("Error converting PDF to image: $output")
-        throw RuntimeException("Error converting PDF to image: $output")
+        val scriptPath = File("src/main/kotlin/fi/project/app/util/convertpdf.py").absolutePath
+        val outputDir = pdfFile.parentFile.absolutePath
+
+        val process = ProcessBuilder(pythonCommand, scriptPath, pdfFile.absolutePath, outputDir)
+            .redirectErrorStream(true)
+            .start()
+
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        val error = process.errorStream.bufferedReader().use { it.readText() }
+        val success = process.waitFor() == 0
+
+        if (!success) {
+            throw RuntimeException("Conversion failed:\n$output\n$error")
+        }
+    } catch (e: Exception) {
+        throw RuntimeException("Failed to convert PDF: ${e.message}")
     }
 }
 
