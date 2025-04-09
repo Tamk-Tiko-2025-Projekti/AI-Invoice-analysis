@@ -49,7 +49,7 @@ fun saveFile(file: MultipartFile, path: String): File {
     // Create the directory if it doesn't exist
     val directory = File(newPath)
     if (!directory.exists()) {
-        directory.mkdir()
+        directory.mkdirs()
     }
 
     /* The file is saved in the project root directory. */
