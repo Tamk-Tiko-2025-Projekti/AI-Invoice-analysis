@@ -33,6 +33,14 @@ fun convertPDFToImage(file: File) {
     }
 }
 
+//TODO: make sure this works on linux also
+/**
+ * Saves a file to the specified path.
+ * Takes a MultipartFile and a path suffix,
+ * and appends it to the path to the project root directory to form the full path.
+ * @param file the file to save, as MultipartFile
+ * @param path the path to save the file to, relative to the project root directory
+ */
 fun saveFile(file: MultipartFile, path: String): File {
     // Get the current working directory and append the given path
     var newPath = System.getProperty("user.dir") + path
