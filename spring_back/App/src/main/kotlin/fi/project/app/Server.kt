@@ -9,6 +9,9 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import fi.project.app.util.saveFile
 import fi.project.app.util.convertPDFToImage
+import fi.project.app.util.createStorage
+import fi.project.app.util.StorageInfo
+import fi.project.app.util.createStorage
 
 @RestController
 @RequestMapping("/")
@@ -25,17 +28,22 @@ class Server {
     ): ResponseEntity<String> {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
-        try {
-            val tempFile = saveFile(file, "/temp")
-            println("Running Python script...")
-            val output = PythonProcess.runScript(tempFile, testRun)
+
+        return try {
+            //uses StorageInfo from util
+            val storageInfo = createStorage(file)
+
+            storageInfo.appendToLogFile("Received file: ${file.originalFilename}")
+            println("Running Python script")
+            storageInfo.appendToLogFile("Running Python script")
+            val output = PythonProcess.runScript(storageInfo.file, testRun)
+            storageInfo.appendToLogFile("Python script output: $output")
             println("Python script output: $output")
-            //val jsonResponse = ObjectMapper().readTree(output)
-            return ResponseEntity(output, HttpStatus.OK)
+
+            ResponseEntity(output, HttpStatus.OK)
         } catch (e: Exception) {
             e.printStackTrace()
-            //val message = ObjectMapper().createObjectNode()
-            return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+            ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
