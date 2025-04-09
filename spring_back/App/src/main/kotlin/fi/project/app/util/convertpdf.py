@@ -9,5 +9,5 @@ if (len(sys.argv) < 2):
     print("Please provide a PDF file path.")
     sys.exit(1)
 
-image = convert_from_path('./temp/temp.pdf', dpi=90, fmt="webp")
+image = convert_from_path(sys.argv[1], dpi=90, fmt="webp")
 image[0].save('./temp/temp' + '.webp', 'webp')
