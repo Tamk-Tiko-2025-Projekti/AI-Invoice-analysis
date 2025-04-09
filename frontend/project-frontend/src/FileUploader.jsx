@@ -29,6 +29,7 @@ const FileUploader = ({ testRun }) => {
   function handleFileChange(e) {
     if (e.target.files) {
       setFile(e.target.files[0]);
+      console.log('Selected file:', e.target.files[0]);
     }
   }
 
@@ -39,6 +40,7 @@ const FileUploader = ({ testRun }) => {
 
     const formData = new FormData();
     formData.append(fileType, file);
+    console.log('FormData:', formData);
 
     try {
       const response = await fetch(path, {

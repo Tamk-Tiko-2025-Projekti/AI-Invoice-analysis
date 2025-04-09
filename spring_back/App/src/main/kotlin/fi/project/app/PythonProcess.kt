@@ -11,7 +11,11 @@ class PythonProcess {
 //            val tempFile = saveFile(file)
 //            println("Temporary file created: ${tempFile.absolutePath}")
             try {
-                val processBuilder = ProcessBuilder("python", "./prompt.py", tempFile.absolutePath, testRun.toString())
+                var pythonCommand = "python3"
+                if (System.getProperty("os.name").lowercase().contains("windows")) {
+                    pythonCommand = "python"
+                }
+                val processBuilder = ProcessBuilder(pythonCommand, "./prompt.py", tempFile.absolutePath, testRun.toString())
                 processBuilder.redirectErrorStream(true)
                 val process = processBuilder.start()
 
