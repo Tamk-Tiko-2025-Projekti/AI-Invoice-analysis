@@ -78,6 +78,7 @@ def make_api_request(image_path):
     4. If ANY req fields are missing, list them in "error"
     5. Bank: reference OR message must exist (add to "error" if both missing)
     6. Return NO other text or explanations
+    7. Return the JSON only, do not add any backticks or other formatting
     """
     # OpenAI API request
     completion = client.chat.completions.create(
