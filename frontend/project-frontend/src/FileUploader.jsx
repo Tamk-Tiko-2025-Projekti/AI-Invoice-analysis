@@ -13,11 +13,12 @@ const FileUploader = ({ testRun }) => {
     // if (fileType === 'pdf') {
     if (file && file.type === 'application/pdf') {
       setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
-    } else if (fileType === 'image') {
+      console.log('File is pdf');
       setFileType('pdf');
     // } else if (fileType === 'image') {
     } else if (file && file.type.startsWith('image/')) {
       setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
+      console.log('File is image');
       setFileType('image');
     } else {
       setPath('');
@@ -27,6 +28,7 @@ const FileUploader = ({ testRun }) => {
   function handleFileChange(e) {
     if (e.target.files) {
       setFile(e.target.files[0]);
+      console.log('Selected file:', e.target.files[0]);
     }
   }
 
@@ -37,6 +39,7 @@ const FileUploader = ({ testRun }) => {
 
     const formData = new FormData();
     formData.append(fileType, file);
+    console.log('FormData:', formData);
 
     try {
       const response = await fetch(path, {
