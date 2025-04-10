@@ -4,14 +4,20 @@ all: setup-venv start
 
 setup-venv:
 	@echo "Setting up virtual environment..."
-	@python3 -m venv spring_back/App/venv
-	@source spring_back/App/venv/bin/activate && pip install -r requirements.txt
+	@if [ ! -d "spring_back/App/venv" ]; then \
+	python3 -m venv spring_back/App/venv; \
+	echo "starting venv and installing dependencies"; \
+	. spring_back/App/venv/bin/activate && pip install -r ./spring_back/App/requirements.txt; \
+	else \
+	echo "Virtual environment already exists"; \
+	fi
+
 
 start: start-back start-front
 
 start-back:
 	@echo "Starting spring boot server..."
-	cd spring_back && ./gradlew bootRun
+	cd spring_back/App && ./gradlew bootRun
 	@echo "Spring Boot server started."
 
 start-front:
