@@ -3,6 +3,7 @@ import './DisplayData.css'
 
 export default function DisplayData({ data }) {
   const [editableData, setEditableData] = useState(data.content);
+  const [errors, setErrors] = useState([]);
 
   const handleInputChange = (e, field) => {
     setEditableData({
@@ -53,9 +54,12 @@ export default function DisplayData({ data }) {
 
   const validateFields = () => {
     let isValid = true;
+    const checkErrors = {};
+
     requiredFields.forEach((field) => {
       const value = editableData[field];
       if (value == null || value == "") {
+        checkErrors[field] = `${field} is required!`
         isValid = false;
       }
     });
@@ -64,10 +68,11 @@ export default function DisplayData({ data }) {
     const bankMessage = editableData['bank_message'];
 
     if ((bankReference && bankMessage) || (!bankReference && !bankMessage)) {
-      alert("Either Bank Reference or Bank Message is required");
+      checkErrors['bank_reference'] = 'Either Bank Reference or Bank Message must be filled, but not both';
       isValid = false;
     }
 
+    setErrors(checkErrors);
     return isValid;
   }
 
@@ -75,14 +80,18 @@ export default function DisplayData({ data }) {
     if (validateFields()) {
       alert("All required fields are filled!");
     } else {
-      alert("Please fill all the required fields!");
+      alert("Please fill all the required fields!" +
+        errors.forEach((field) => {
+          errors[field].toString();
+        })
+      );
     }
   }
 
   return (
-    <div>
+    <div className='display-data'>
       <h2>JSON data</h2>
-      <div>
+      <div className='fields-container'>
         {fields.map(({ label, key }) => (
           <label key={key}>
             {label}:
