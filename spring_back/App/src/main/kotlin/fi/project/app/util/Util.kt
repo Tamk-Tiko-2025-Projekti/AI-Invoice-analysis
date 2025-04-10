@@ -207,3 +207,36 @@ data class StorageInfo(
         logFile.appendText("$message\n")
     }
 }
+
+
+/**
+ * Verifies the barcode information from an image file.
+ *
+ * @param data The StorageInfo object containing the file to be verified.
+ * @return A string indicating the result of the barcode verification.
+ * @throws RuntimeException If the barcode verification fails.
+ */
+fun verifyBarCode(data: StorageInfo): String {
+    // Determine the Python command based on the operating system
+    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
+
+    data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
+
+    val ProcessBuilder = ProcessBuilder(
+        pythonCommand,
+        "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
+        data.file.absolutePath // Path to the file to be verified
+    )
+        .redirectErrorStream(true)
+        .start()
+    val output = ProcessBuilder.inputStream.bufferedReader().use { it.readText() }
+    val error = ProcessBuilder.errorStream.bufferedReader().use { it.readText() }
+    val success = ProcessBuilder.waitFor() == 0
+    if (!success) {
+        throw RuntimeException("Barcode verification failed:\n$output\n$error")
+    } else {
+        data.appendToLogFile("Barcode verification successful:\n$output")
+        println("Barcode verification output:\n$output")
+        return output
+    }
+}
