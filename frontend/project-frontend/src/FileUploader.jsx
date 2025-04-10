@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import FileTypeHandler from './FileTypeHandler';
 import DisplayData from './DisplayData';
 
 const FileUploader = ({ testRun }) => {
@@ -10,20 +9,22 @@ const FileUploader = ({ testRun }) => {
   const [path, setPath] = useState('')
 
   useEffect(() => {
-    // if (fileType === 'pdf') {
-    if (file && file.type === 'application/pdf') {
-      setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
-      console.log('File is pdf');
-      setFileType('pdf');
-    // } else if (fileType === 'image') {
-    } else if (file && file.type.startsWith('image/')) {
-      setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
-      console.log('File is image');
-      setFileType('image');
+    if (file) {
+      if (file.type === 'application/pdf') {
+        setFileType('pdf');
+        setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
+      } else if (file.type.startsWith('image/')) {
+        setFileType('image');
+        setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
+      } else {
+        setFileType('');
+        setPath('');
+      }
     } else {
+      setFileType('');
       setPath('');
     }
-  }, [file, fileType, testRun]);
+  }, [file, testRun]);
 
   function handleFileChange(e) {
     if (e.target.files) {
@@ -70,8 +71,6 @@ const FileUploader = ({ testRun }) => {
         </div>
       )}
 
-      {/*<FileTypeHandler file={file} setFileType={setFileType} />*/}
-
       {file && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
       )}
@@ -81,11 +80,7 @@ const FileUploader = ({ testRun }) => {
       {status === 'error' && <p>Error uploading the file</p>}
 
       {status === 'success' && (
-        <div>
-          <h2>JSON data:</h2>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-          <DisplayData data={data} />
-        </div>
+        <DisplayData data={data} />
       )}
     </div>
   );

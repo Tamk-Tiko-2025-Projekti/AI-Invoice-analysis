@@ -7,21 +7,33 @@ import kotlin.random.Random
 import java.io.IOException
 import java.nio.file.Paths
 
+/**
+ * Converts a PDF file to an image using a Python script.
+ * The script is executed as a subprocess, and the output is saved in the same directory as the PDF.
+ * Throws a RuntimeException if the conversion fails.
+ *
+ * @param pdfFile the PDF file to be converted
+ */
 fun convertPDFToImage(pdfFile: File) {
     try {
+        // Determine the Python command based on the operating system
         val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
 
+        // Get the absolute path of the Python script and the output directory
         val scriptPath = File("src/main/kotlin/fi/project/app/util/convertpdf.py").absolutePath
         val outputDir = pdfFile.parentFile.absolutePath
 
+        // Execute the Python script as a subprocess
         val process = ProcessBuilder(pythonCommand, scriptPath, pdfFile.absolutePath, outputDir)
             .redirectErrorStream(true)
             .start()
 
+        // Capture the output and error streams
         val output = process.inputStream.bufferedReader().use { it.readText() }
         val error = process.errorStream.bufferedReader().use { it.readText() }
         val success = process.waitFor() == 0
 
+        // Throw an exception if the process fails
         if (!success) {
             throw RuntimeException("Conversion failed:\n$output\n$error")
         }
@@ -30,27 +42,27 @@ fun convertPDFToImage(pdfFile: File) {
     }
 }
 
-//TODO: make sure this works on linux also
 /**
- * Saves a file to the specified path.
- * Takes a MultipartFile and a path suffix,
- * and appends it to the path to the project root directory to form the full path.
+ * Saves a file to the specified path relative to the project root directory.
+ * Ensures the directory exists before saving the file.
+ *
  * @param file the file to save, as MultipartFile
- * @param path the path to save the file to, relative to the project root directory
+ * @param path the relative path where the file should be saved
+ * @return the saved File object
  */
 fun saveFile(file: MultipartFile, path: String): File {
-    // Get the current working directory and append the given path
+    // Construct the full path and normalize it for cross-platform compatibility
     var newPath = System.getProperty("user.dir") + path
     newPath = newPath.replace("\\", "/")
     println("New path: $newPath")
+
     // Create the directory if it doesn't exist
     val directory = File(newPath)
     if (!directory.exists()) {
         directory.mkdir()
     }
 
-    /* The file is saved in the project root directory. */
-//    val savedFile = File(newPath, file.originalFilename ?: "tempfile")
+    // Save the file with a temporary name based on its extension
     val fileExtension = file.originalFilename?.substringAfterLast(".")
     val savedFile = File(newPath, "temp.$fileExtension")
     file.transferTo(savedFile)
@@ -60,25 +72,26 @@ fun saveFile(file: MultipartFile, path: String): File {
 }
 
 /**
- * Creates a storage directory for the given file and saves the file within it.
- * The directory is uniquely named using the current timestamp and a random letter.
- * The file is saved with its original extension, if available, or a default name otherwise.
- * Returns a `StorageInfo` object containing details about the stored file and directory.
+ * Creates a unique storage directory for a file and saves the file within it.
+ * The directory name is generated using the current timestamp and a random letter.
+ * Returns a StorageInfo object containing details about the stored file and directory.
  *
- * @param file the file to be stored, as a MultipartFile
+ * @param file the file to be stored, as MultipartFile
  * @param baseDir the base directory where the storage directory will be created (default is "temp")
- * @return a `StorageInfo` object containing details about the stored file and directory
+ * @return a StorageInfo object with details about the stored file and directory
  * @throws IOException if the directory cannot be created or the file cannot be saved
  */
 fun createStorage(file: MultipartFile, baseDir: String = "temp"): StorageInfo {
+    // Generate a unique directory name
     val timeStamp = Instant.now().toEpochMilli()
     val randomLetter = ('a'..'z').random()
     val dirName = "$timeStamp-$randomLetter"
 
-    //fixes baseDir to be relative to the project root
+    // Resolve the base directory relative to the project root
     val projectRoot = Paths.get("").toAbsolutePath().toFile()
     val directory = File(projectRoot, "$baseDir/$dirName")
 
+    // Create the directory if it doesn't exist
     if (!directory.exists()) {
         val created = directory.mkdirs()
         if (created) {
@@ -88,11 +101,13 @@ fun createStorage(file: MultipartFile, baseDir: String = "temp"): StorageInfo {
         }
     }
 
+    // Determine the file's extension and construct its name
     val originalExt = file.originalFilename?.substringAfterLast('.', "")
     val filename = if (originalExt.isNullOrBlank()) dirName else "$dirName.$originalExt"
 
     val savedFile = File(directory, filename)
 
+    // Save the file and handle exceptions
     try {
         file.transferTo(savedFile)
         println("Primary file saved as: ${savedFile.absolutePath}")
@@ -100,6 +115,7 @@ fun createStorage(file: MultipartFile, baseDir: String = "temp"): StorageInfo {
         throw IOException("Failed to save file: ${savedFile.absolutePath}", e)
     }
 
+    // Return storage information
     return StorageInfo(
         directoryPath = directory.absolutePath,
         filePath = savedFile.absolutePath,
@@ -110,19 +126,12 @@ fun createStorage(file: MultipartFile, baseDir: String = "temp"): StorageInfo {
 
 /**
  * Data class representing storage information for a file.
- * This class provides functionality to manage files in a specific directory,
- * including creating new files and maintaining a log of actions performed in the directory.
- *
- * Upon initialization, a log file (`log.txt`) is created in the directory,
- * and the creation timestamp is recorded. Subsequent actions, such as creating new files,
- * are appended to the log file.
+ * Provides functionality to manage files in a specific directory, including logging actions.
  *
  * @property directoryPath the path to the directory where the file is stored
  * @property filePath the path to the file itself
  * @property originalFilename the original filename of the uploaded file
  * @property originalExtension the original file extension, derived from the filename
- *
- * @constructor Initializes the `StorageInfo` object and ensures a log file is created in the directory.
  */
 data class StorageInfo(
     val directoryPath: String,
@@ -145,12 +154,14 @@ data class StorageInfo(
      * @throws IOException if the file cannot be created
      */
     fun createNewFile(filename: String): File {
+        // Ensure the directory exists
         if (!directory.exists()) {
             if (!directory.mkdirs()) {
                 throw IOException("Failed to create directory: ${directory.absolutePath}")
             }
         }
 
+        // Create the new file and log the action
         val newFile = File(directory, filename)
         if (!newFile.exists()) {
             newFile.createNewFile()
@@ -168,12 +179,14 @@ data class StorageInfo(
      * Creates a log file in the directory with the timestamp and "created" message.
      */
     private fun createLogFile() {
+        // Ensure the directory exists
         if (!directory.exists()) {
             if (!directory.mkdirs()) {
                 throw IOException("Failed to create directory for log: ${directory.absolutePath}")
             }
         }
 
+        // Create the log file if it doesn't exist
         val logFile = File(directory, "log.txt")
         if (!logFile.exists()) {
             logFile.writeText("${Instant.now()} created\n")
