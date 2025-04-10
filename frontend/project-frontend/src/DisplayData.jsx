@@ -51,6 +51,34 @@ export default function DisplayData({ data }) {
     'total_gross',
   ];
 
+  const validateFields = () => {
+    let isValid = true;
+    requiredFields.forEach((field) => {
+      const value = editableData[field];
+      if (value == null || value == "") {
+        isValid = false;
+      }
+    });
+
+    const bankReference = editableData['bank_reference'];
+    const bankMessage = editableData['bank_message'];
+
+    if ((bankReference && bankMessage) || (!bankReference && !bankMessage)) {
+      alert("Either Bank Reference or Bank Message is required");
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  const handleSubmit = () => {
+    if (validateFields()) {
+      alert("All required fields are filled!");
+    } else {
+      alert("Please fill all the required fields!");
+    }
+  }
+
   return (
     <div>
       <h2>JSON data</h2>
@@ -67,7 +95,7 @@ export default function DisplayData({ data }) {
           </label>
         ))}
       </div>
-      <button>Send data (No functionality)</button>
+      <button onClick={handleSubmit}>Validate fields</button>
     </div>
   );
 }
