@@ -11,6 +11,7 @@ import fi.project.app.util.saveFile
 import fi.project.app.util.convertPDFToImage
 import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
+import fi.project.app.util.verifyBarCode
 
 @RestController
 @RequestMapping("/")
@@ -86,6 +87,13 @@ class Server {
             println("Second prompt output: $output")
             storageInfo.appendToLogFile("JSON output: $output")
 
+            try {
+                val output: String = verifyBarCode(storageInfo)
+                // TODO: verify the AI output with the barcode data
+            } catch (e: Exception) {
+                println("Error verifying barcode:\n${e.message}")
+                storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
+            }
             // Return the final output as a response
             ResponseEntity(output, HttpStatus.OK)
         } catch (e: Exception) {
