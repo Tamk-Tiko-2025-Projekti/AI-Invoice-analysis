@@ -1,0 +1,19 @@
+div>div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  max-width: fit-content;
+  align-items: center;
+}
+
+input[type="text"] {
+  min-width: 150px;
+  max-width: 100%;
+  padding: 5px;
+}
