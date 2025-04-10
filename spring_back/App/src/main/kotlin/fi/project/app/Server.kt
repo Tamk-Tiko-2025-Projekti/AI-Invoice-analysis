@@ -21,24 +21,26 @@ class Server {
         return "Hello World!"
     }
 
-    @PostMapping("/image")
-    fun postImage(
-        @RequestParam("image") file: MultipartFile,
-        @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean
+    private fun processFile(
+        file: MultipartFile,
+        testRun: Boolean,
+        preProcessing: ((File, StorageInfo) -> File)? = null
     ): ResponseEntity<String> {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
 
         return try {
-            //uses StorageInfo from util
             val storageInfo = createStorage(file)
-
             storageInfo.appendToLogFile("Received file: ${file.originalFilename}")
-            println("Running Python script")
-            storageInfo.appendToLogFile("Running Python script")
-            val output = PythonProcess.runScript(storageInfo.file, testRun)
-            storageInfo.appendToLogFile("Python script output: $output")
+
+            val processedFile = preProcessing?.invoke(storageInfo.file, storageInfo) ?: storageInfo.file
+
+            println("Running Python script on: ${processedFile.absolutePath}")
+            storageInfo.appendToLogFile("Running Python script on: ${processedFile.name}")
+            val output = PythonProcess.runScript(processedFile, testRun)
+
             println("Python script output: $output")
+            storageInfo.appendToLogFile("Python script output: $output")
 
             ResponseEntity(output, HttpStatus.OK)
         } catch (e: Exception) {
@@ -47,41 +49,31 @@ class Server {
         }
     }
 
+    @PostMapping("/image")
+    fun postImage(
+        @RequestParam("image") file: MultipartFile,
+        @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean
+    ): ResponseEntity<String> {
+        return processFile(file, testRun)
+    }
+
     @PostMapping("/pdf")
     fun postPDF(
         @RequestParam("pdf") file: MultipartFile,
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean
     ): ResponseEntity<String> {
-        println("Received file: ${file.originalFilename}")
-        println("Test run: $testRun")
-        return try {
-            // Store the incoming PDF file in the temp directory
-            val storageInfo = createStorage(file)
-            storageInfo.appendToLogFile("Received PDF: ${file.originalFilename}")
+        return processFile(file, testRun) { pdfFile, storageInfo ->
             println("Running PDF to image conversion...")
             storageInfo.appendToLogFile("Running PDF to image conversion...")
 
-            // Convert the saved PDF file
-            convertPDFToImage(storageInfo.file)
+            convertPDFToImage(pdfFile)
 
-            // Check for converted image
             val outputImage = File(storageInfo.directoryPath, "temp.webp")
             if (!outputImage.exists()) {
                 storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
-                return ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+                throw Exception("Converted file does not exist")
             }
-
-            println("Running Python script on: ${outputImage.absolutePath}")
-            storageInfo.appendToLogFile("Running Python script on: ${outputImage.name}")
-            val output = PythonProcess.runScript(outputImage, testRun)
-
-            println("Python script output: $output")
-            storageInfo.appendToLogFile("Python script output: $output")
-
-            ResponseEntity(output, HttpStatus.OK)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+            outputImage
         }
     }
 }
