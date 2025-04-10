@@ -1,6 +1,7 @@
 import base64
 import sys
 import json
+import os
 from openai import OpenAI
 
 
@@ -33,7 +34,7 @@ base64_image = encode_image(image_path)
 def make_api_request(image_path):
     # Encode the image
     base64_image = encode_image(image_path)
-    client = OpenAI(api_key="INSERT API KEY HERE")
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
     # Prompt definition
     dev_prompt = """
