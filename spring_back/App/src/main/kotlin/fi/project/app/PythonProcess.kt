@@ -10,12 +10,15 @@ class PythonProcess {
         fun runScript(tempFile: File, testRun: Boolean): String {
 //            val tempFile = saveFile(file)
 //            println("Temporary file created: ${tempFile.absolutePath}")
+            val isWindows = System.getProperty("os.name").lowercase().contains("windows")
             try {
-                var pythonCommand = "python3"
-                if (System.getProperty("os.name").lowercase().contains("windows")) {
-                    pythonCommand = "python"
+                val pythonCommand = if (isWindows) {
+                    "python"
+                } else {
+                    "python3"
                 }
-                val processBuilder = ProcessBuilder(pythonCommand, "./prompt.py", tempFile.absolutePath, testRun.toString())
+                val processBuilder =
+                    ProcessBuilder(pythonCommand, "./prompt.py", tempFile.absolutePath, testRun.toString())
                 processBuilder.redirectErrorStream(true)
                 val process = processBuilder.start()
 
