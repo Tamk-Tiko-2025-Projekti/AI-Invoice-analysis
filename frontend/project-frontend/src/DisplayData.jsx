@@ -83,11 +83,7 @@ export default function DisplayData({ data }) {
     if (validateFields()) {
       alert("All required fields are filled!");
     } else {
-      alert("Please fill all the required fields!" +
-        errors.forEach((field) => {
-          errors[field].toString();
-        })
-      );
+      alert("Please fill all the required fields!");
     }
   }
 
