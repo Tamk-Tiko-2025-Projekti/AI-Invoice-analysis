@@ -218,7 +218,8 @@ data class StorageInfo(
  */
 fun verifyBarCode(data: StorageInfo): String {
     // Determine the Python command based on the operating system
-    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
+//    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
+    val pythonCommand = "${System.getProperty("user.dir")}/venv/bin/python3" // Use the Python interpreter from the virtual environment.
 
     data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
 
