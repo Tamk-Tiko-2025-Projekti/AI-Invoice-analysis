@@ -3,7 +3,6 @@ package fi.project.app.util
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.time.Instant
-import kotlin.random.Random
 import java.io.IOException
 import java.nio.file.Paths
 
@@ -217,21 +216,18 @@ data class StorageInfo(
  * @throws RuntimeException If the barcode verification fails.
  */
 fun verifyBarCode(data: StorageInfo): String {
-    // Determine the Python command based on the operating system
-    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
-
     data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
 
-    val ProcessBuilder = ProcessBuilder(
-        pythonCommand,
+    val processBuilder = ProcessBuilder(
+        getPythonInterpreter(),
         "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
         data.file.absolutePath // Path to the file to be verified
     )
         .redirectErrorStream(true)
         .start()
-    val output = ProcessBuilder.inputStream.bufferedReader().use { it.readText() }
-    val error = ProcessBuilder.errorStream.bufferedReader().use { it.readText() }
-    val success = ProcessBuilder.waitFor() == 0
+    val output = processBuilder.inputStream.bufferedReader().use { it.readText() }
+    val error = processBuilder.errorStream.bufferedReader().use { it.readText() }
+    val success = processBuilder.waitFor() == 0
     if (!success) {
         throw RuntimeException("Barcode verification failed:\n$output\n$error")
     } else {
@@ -239,4 +235,49 @@ fun verifyBarCode(data: StorageInfo): String {
         println("Barcode verification output:\n$output")
         return output
     }
+}
+
+
+/**
+ * Returns the path to the python interpreter in the virtual environment.
+ * The exact path is determined based on the operating system.
+ *
+ * @return The path to the python interpreter as a String.
+ */
+fun getPythonInterpreter(): String {
+    val venvDir = findVenvDirectory()
+    val pythonInterpreter = if (System.getProperty("os.name").lowercase().contains("windows")) {
+        File(venvDir, "Scripts/python.exe").absolutePath
+    } else {
+        File(venvDir, "bin/python3").absolutePath
+    }
+    println("Python interpreter path: $pythonInterpreter")
+    return pythonInterpreter
+}
+
+/**
+ * Attempts to find the python virtual environment directory.
+ * Checks several possible locations:
+ * - The current working directory
+ * - The parent directory of the current working directory
+ * - A subdirectory named "spring_back" in the current working directory
+ * If none of these locations contain a "venv" directory, it defaults to the current working directory.
+ *
+ * @return The File object representing the venv directory.
+ */
+fun findVenvDirectory(): File {
+    val projectRoot = File(System.getProperty("user.dir"))
+    val possibleLocationgs = listOf(
+        projectRoot,
+        projectRoot.parentFile,
+        File(projectRoot, "spring_back")
+    )
+    for (location in possibleLocationgs) {
+        val venvDir = File(location, "venv")
+        if (venvDir.exists() && venvDir.isDirectory) {
+            return venvDir
+        }
+    }
+    // If no venv directory is found, return the default location
+    return File(projectRoot, "venv")
 }

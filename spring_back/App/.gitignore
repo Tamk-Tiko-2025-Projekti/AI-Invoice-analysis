@@ -39,5 +39,7 @@ out/
 ### Kotlin ###
 .kotlin
 
-### temp directory
+### temp directory ###
 temp/
+### Python virtual environment ###
+/venv/*

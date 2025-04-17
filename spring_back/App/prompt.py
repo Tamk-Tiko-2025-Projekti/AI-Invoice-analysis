@@ -3,6 +3,9 @@ import sys
 import json
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
+
+
 
 # Parse command-line arguments
 image_path = sys.argv[1]
@@ -46,6 +49,8 @@ if image_path != "-":
 
 # Function to send API request
 def make_api_request():
+    # Load environment variables
+    load_dotenv()
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
     user_content = [{"type": "text", "text": user_prompt}]
