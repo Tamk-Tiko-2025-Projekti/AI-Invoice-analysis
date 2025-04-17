@@ -58,7 +58,6 @@ class Server {
                     userPromptFile = userPromptFile,
                     testRun = true,
                     expectJson = true,
-                    venvPath = venvPath
                 )
             } else {
                 // First prompt execution
@@ -68,7 +67,6 @@ class Server {
                     userPromptFile = userPromptFile,
                     testRun = false,
                     expectJson = false,
-                    venvPath = venvPath
                 )
 
                 // Save intermediate output to a file
@@ -84,7 +82,6 @@ class Server {
                     userPromptFile = intermediateFile,
                     testRun = false,
                     expectJson = true,
-                    venvPath = venvPath
                 )
             }
 

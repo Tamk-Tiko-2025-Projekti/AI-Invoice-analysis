@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import fi.project.app.util.getPythonInterpreter
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -23,22 +24,15 @@ class PythonProcess {
             userPromptFile: File,
             testRun: Boolean,
             expectJson: Boolean,
-            venvPath: String
         ): String {
             try {
-                // Determine the Python command based on the operating system.
-//                val pythonCommand = if (System.getProperty("os.name").lowercase().contains("windows")) "python" else "python3"
-
-//                println(venvPath)
-                val pythonCommand = "$venvPath/bin/python3" // Use the Python interpreter from the virtual environment.
-
-                // Get the absolute path of the Python script to be executed.
-
                 //TODO: move to smarter place
                 val scriptPath = File("prompt.py").absolutePath
 
                 // Prepare the list of arguments to pass to the Python script.
-                val args = mutableListOf(pythonCommand, scriptPath)
+                // The first argument is the path to the Python interpreter in the virtual environment.
+                // The second argument is the path to the python script that is going to be run.
+                val args = mutableListOf(getPythonInterpreter(), scriptPath)
 
                 // Add the image file path or a placeholder if no image is provided.
                 args.add(imageFile?.absolutePath ?: "-")
