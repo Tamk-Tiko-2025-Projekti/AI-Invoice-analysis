@@ -24,7 +24,6 @@ class PythonProcess {
             userPromptFile: File,
             testRun: Boolean,
             expectJson: Boolean,
-            venvPath: String
         ): String {
             try {
                 //TODO: move to smarter place
