@@ -1,6 +1,6 @@
-.PHONY: all setup-venv start-back start-front start stop help
+.PHONY: all setup-venv build start-back start-front start-both stop help
 
-all: setup-venv start
+all: setup-venv build-front start-back
 
 setup-venv:
 	@if [ ! -d "spring_back/App/venv" ]; then \
@@ -10,8 +10,7 @@ setup-venv:
 	@echo "starting venv and installing dependencies";
 	@. spring_back/App/venv/bin/activate && pip install -r ./spring_back/App/requirements.txt; \
 
-
-start: start-back start-front
+start-both: start-back start-front
 
 start-back:
 	@echo "Starting spring boot server..."
@@ -45,8 +44,9 @@ help:
 	@echo "Makefile commands:"
 	@echo "  all          - Setup virtual environment and start servers (default target)"
 	@echo "  setup-venv   - Setup virtual environment"
-	@echo "  start        - Start both Spring Boot and React servers"
+	@echo "  start-both   - Start both Spring Boot and React servers"
 	@echo "  start-back   - Start Spring Boot server"
 	@echo "  start-front  - Start React front-end"
+	@echo "  build-front  - Build React front-end and copy to spring_back/App/src/main/resources/static/"
 	@echo "  stop         - Stop all servers"
 	@echo "  help         - Show this help message"
