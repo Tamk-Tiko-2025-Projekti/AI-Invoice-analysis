@@ -217,14 +217,10 @@ data class StorageInfo(
  * @throws RuntimeException If the barcode verification fails.
  */
 fun verifyBarCode(data: StorageInfo): String {
-    // Determine the Python command based on the operating system
-//    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
-    val pythonCommand = "${System.getProperty("user.dir")}/venv/bin/python3" // Use the Python interpreter from the virtual environment.
-
     data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
 
     val ProcessBuilder = ProcessBuilder(
-        pythonCommand,
+        getPythonInterpreter(),
         "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
         data.file.absolutePath // Path to the file to be verified
     )
