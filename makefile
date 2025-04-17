@@ -25,6 +25,18 @@ start-front:
 	cd frontend && npm run dev
 	@echo "React front-end started."
 
+build-front:
+	@echo "Building React front-end..."
+	cd frontend && npm run build
+	@echo "React front-end built."
+	@echo "Current working directory: $(shell pwd)"
+	@if [ ! -d "spring_back/App/main/resources/static/" ]; then \
+		echo "Creating static directory..."; \
+		mkdir -p spring_back/App/src/main/resources/static/; \
+	fi
+	@echo "Copying build to Spring Boot resources..."
+	@cp -r frontend/dist/* spring_back/App/src/main/resources/static/
+
 stop:
 	@echo "Stopping servers..."
 	@pkill -f 'java -jar' || true
