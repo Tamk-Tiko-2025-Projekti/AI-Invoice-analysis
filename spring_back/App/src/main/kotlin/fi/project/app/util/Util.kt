@@ -3,7 +3,6 @@ package fi.project.app.util
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.time.Instant
-import kotlin.random.Random
 import java.io.IOException
 import java.nio.file.Paths
 
@@ -219,16 +218,16 @@ data class StorageInfo(
 fun verifyBarCode(data: StorageInfo): String {
     data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
 
-    val ProcessBuilder = ProcessBuilder(
+    val processBuilder = ProcessBuilder(
         getPythonInterpreter(),
         "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
         data.file.absolutePath // Path to the file to be verified
     )
         .redirectErrorStream(true)
         .start()
-    val output = ProcessBuilder.inputStream.bufferedReader().use { it.readText() }
-    val error = ProcessBuilder.errorStream.bufferedReader().use { it.readText() }
-    val success = ProcessBuilder.waitFor() == 0
+    val output = processBuilder.inputStream.bufferedReader().use { it.readText() }
+    val error = processBuilder.errorStream.bufferedReader().use { it.readText() }
+    val success = processBuilder.waitFor() == 0
     if (!success) {
         throw RuntimeException("Barcode verification failed:\n$output\n$error")
     } else {
