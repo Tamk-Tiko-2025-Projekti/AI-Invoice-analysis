@@ -16,14 +16,14 @@ import java.nio.file.Paths
 fun convertPDFToImage(pdfFile: File) {
     try {
         // Determine the Python command based on the operating system
-        val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
+//        val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
 
         // Get the absolute path of the Python script and the output directory
         val scriptPath = File("src/main/kotlin/fi/project/app/util/convertpdf.py").absolutePath
         val outputDir = pdfFile.parentFile.absolutePath
 
         // Execute the Python script as a subprocess
-        val process = ProcessBuilder(pythonCommand, scriptPath, pdfFile.absolutePath, outputDir)
+        val process = ProcessBuilder(getPythonInterpreter(), scriptPath, pdfFile.absolutePath, outputDir)
             .redirectErrorStream(true)
             .start()
 
