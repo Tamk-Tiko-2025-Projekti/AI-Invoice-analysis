@@ -10,6 +10,11 @@ import fi.project.app.util.pdfPreProcessing
 import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
 import fi.project.app.util.verifyBarCode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+
 
 @RestController
 @RequestMapping("/")
@@ -142,9 +147,56 @@ class Server {
     fun postMultipleFiles(
         @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
-    ): ResponseEntity<String> {
+    ): ResponseEntity<List<String>> {
         println("Received ${files.size} files")
-        processFiles(files)
-        return ResponseEntity("Received ${files.size} files", HttpStatus.OK)
+        try {
+//            processFiles(files)
+            val results = runBlocking {
+                files.map { file ->
+                    async(Dispatchers.IO) {
+                        try {
+                            when {
+                                file.contentType == "application/pdf" -> {
+                                    // Process PDF files
+                                    //TODO: un-hardcode the testRun
+                                    processFile(file, testRun = true) { pdfFile, storageInfo ->
+                                        pdfPreProcessing(pdfFile, storageInfo)
+                                    }
+                                }
+                                file.contentType?.startsWith("image/") == true -> {
+                                    // Process image files
+                                    //TODO: un-hardcode the testRun
+                                    processFile(file, testRun = true)
+                                }
+                                else -> {
+                                    throw IllegalArgumentException("Unsupported file type: ${file.contentType}")
+                                }
+                            }
+//                            if (file.contentType == "application/pdf") {
+//                                // Process PDF files
+//                                processFile(file, testRun) { pdfFile, storageInfo ->
+//                                    pdfPreProcessing(pdfFile, storageInfo)
+//                                }
+//                            } else {
+//                                // Process image files
+//                                processFile(file, testRun)
+//                            }
+                        } catch (e: Exception) {
+                            println("Error processing file ${file.originalFilename}: ${e.message}")
+                            "Error processing file ${file.originalFilename}: ${e.message}"
+                        }
+                    }
+                }.awaitAll()
+            }
+            println("Processed ${files.size} files")
+            // Return the results as a response
+            println("Results: $results")
+            return ResponseEntity(results, HttpStatus.OK)
+//            return ResponseEntity(results.joinToString("\n"), HttpStatus.OK)
+        } catch (e: Exception) {
+            println("Error processing files: ${e.message}")
+//            return ResponseEntity(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity(listOf("Error processing files: ${e.message}"), HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 }
