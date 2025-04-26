@@ -26,7 +26,7 @@ class Server {
         file: MultipartFile, // Uploaded file
         testRun: Boolean, // Flag to indicate if this is a test run
         preProcessing: ((File, StorageInfo) -> File)? = null // Optional preprocessing step
-    ): ResponseEntity<String> {
+    ): String {
         println("Received file: ${file.originalFilename}")
         println("Test run: $testRun")
 
@@ -94,11 +94,13 @@ class Server {
                 storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
             }
             // Return the final output as a response
-            ResponseEntity(output, HttpStatus.OK)
+//            ResponseEntity(output, HttpStatus.OK)
+            output
         } catch (e: Exception) {
             // Handle exceptions and return an error response
             e.printStackTrace()
-            ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+//            ResponseEntity("error", HttpStatus.INTERNAL_SERVER_ERROR)
+            throw RuntimeException("Error processing file: ${e.message}")
         }
     }
 
@@ -108,7 +110,13 @@ class Server {
         @RequestParam("image") file: MultipartFile, // Uploaded image file
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<String> {
-        return processFile(file, testRun)
+//        return processFile(file, testRun)
+        try {
+            return ResponseEntity(processFile(file, testRun), HttpStatus.OK)
+        } catch (e: Exception) {
+            println("Error processing image file: ${e.message}")
+            return ResponseEntity(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
     // Endpoint to process PDF files
@@ -117,7 +125,16 @@ class Server {
         @RequestParam("pdf") file: MultipartFile, // Uploaded PDF file
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<String> {
-        return processFile(file, testRun) { pdfFile, storageInfo -> pdfPreProcessing(pdfFile, storageInfo)
+//        return processFile(file, testRun) { pdfFile, storageInfo ->
+//            pdfPreProcessing(pdfFile, storageInfo)
+//        }
+        try {
+            return ResponseEntity(processFile(file, testRun) { pdfFile, storageInfo ->
+                pdfPreProcessing(pdfFile, storageInfo)
+            }, HttpStatus.OK)
+        } catch (e: Exception) {
+            println("Error processing PDF file: ${e.message}")
+            return ResponseEntity(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
