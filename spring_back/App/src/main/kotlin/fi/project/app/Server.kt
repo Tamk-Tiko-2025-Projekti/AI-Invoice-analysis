@@ -5,9 +5,6 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 import java.io.File
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import fi.project.app.util.saveFile
 import fi.project.app.util.convertPDFToImage
 import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
@@ -18,10 +15,10 @@ import fi.project.app.util.verifyBarCode
 class Server {
 
     // Endpoint to check if the server is running
-    @GetMapping("/")
-    fun hello(): String {
-        return "Hello World!"
-    }
+//    @GetMapping("/")
+//    fun hello(): String {
+//        return "Hello World!"
+//    }
 
     // Core function to process uploaded files
     private fun processFile(
@@ -134,5 +131,18 @@ class Server {
             }
             outputImage
         }
+    }
+
+    @PostMapping("/files")
+    fun postMultipleFiles(
+        @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
+        @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
+    ): ResponseEntity<String> {
+        println("Received ${files.size} files")
+        files.forEach { file ->
+            println("File: ${file.originalFilename}")
+            println("Type: ${file.contentType}")
+        }
+        return ResponseEntity("Received ${files.size} files", HttpStatus.OK)
     }
 }
