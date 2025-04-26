@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 import java.io.File
 import fi.project.app.util.convertPDFToImage
+import fi.project.app.util.pdfPreProcessing
 import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
 import fi.project.app.util.verifyBarCode
@@ -116,20 +117,7 @@ class Server {
         @RequestParam("pdf") file: MultipartFile, // Uploaded PDF file
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<String> {
-        return processFile(file, testRun) { pdfFile, storageInfo ->
-            println("Running PDF to image conversion...")
-            storageInfo.appendToLogFile("Running PDF to image conversion...")
-
-            // Convert the PDF to an image
-            convertPDFToImage(pdfFile)
-
-            // Check if the converted image exists
-            val outputImage = File(storageInfo.directoryPath, "temp.webp")
-            if (!outputImage.exists()) {
-                storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
-                throw Exception("Converted file does not exist")
-            }
-            outputImage
+        return processFile(file, testRun) { pdfFile, storageInfo -> pdfPreProcessing(pdfFile, storageInfo)
         }
     }
 
@@ -139,10 +127,7 @@ class Server {
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<String> {
         println("Received ${files.size} files")
-        files.forEach { file ->
-            println("File: ${file.originalFilename}")
-            println("Type: ${file.contentType}")
-        }
+        processFiles(files)
         return ResponseEntity("Received ${files.size} files", HttpStatus.OK)
     }
 }

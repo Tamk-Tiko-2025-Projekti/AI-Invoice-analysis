@@ -281,3 +281,19 @@ fun findVenvDirectory(): File {
     // If no venv directory is found, return the default location
     return File(projectRoot, "venv")
 }
+
+fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
+    println("Running PDF to image conversion...")
+    storageInfo.appendToLogFile("Running PDF to image conversion...")
+
+    // Convert the PDF to an image
+    convertPDFToImage(pdfFile)
+
+    // Check if the converted image exists
+    val outputImage = File(storageInfo.directoryPath, "temp.webp")
+    if (!outputImage.exists()) {
+        storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
+        throw Exception("Converted file does not exist")
+    }
+    return outputImage
+}
