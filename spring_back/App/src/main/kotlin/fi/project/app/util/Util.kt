@@ -6,6 +6,8 @@ import java.time.Instant
 import kotlin.random.Random
 import java.io.IOException
 import java.nio.file.Paths
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 /**
  * Converts a PDF file to an image using a Python script.
@@ -217,6 +219,12 @@ data class StorageInfo(
  * @throws RuntimeException If the barcode verification fails.
  */
 fun verifyBarCode(data: StorageInfo): String {
+    // Check if the temporary file exists
+    val path = data.directoryPath
+    var file = File(path, "temp.webp")
+    if (!file.exists()) {
+        file = File(path, data.file.name)
+    }
     // Determine the Python command based on the operating system
     val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
 
@@ -225,7 +233,7 @@ fun verifyBarCode(data: StorageInfo): String {
     val ProcessBuilder = ProcessBuilder(
         pythonCommand,
         "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
-        data.file.absolutePath // Path to the file to be verified
+        file.absolutePath // Path to the file to be verified
     )
         .redirectErrorStream(true)
         .start()

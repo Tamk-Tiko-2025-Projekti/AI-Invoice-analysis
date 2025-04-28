@@ -10,11 +10,17 @@ if len(sys.argv) < 2:
 image_path = sys.argv[1]
 
 image = Image.open(image_path)
-decoded_objects = decode(image)
+image = image.convert('L') # Convert to 8-bit grayscale
 
+decoded_objects = decode(image)
+# Check if the image was decoded successfully
+if not decoded_objects:
+    print("Failed to decode the image.")
+    sys.exit(1)
 barcode = None
 # Check if the barcode is in CODE128 format
 for obj in decoded_objects:
+    print(f"Found barcode: Type={obj.type}, Data={obj.data}")
     if obj.type == "CODE128":
         barcode = obj.data.decode("utf-8")
         break
