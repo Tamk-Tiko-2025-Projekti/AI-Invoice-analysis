@@ -9,24 +9,6 @@ const FileUploader = ({ testRun }) => {
   //Path for post request
   const path = `http://localhost:8080/testRun=${testRun.toString()}`
 
-  /* useEffect(() => {
-    if (file) {
-      if (file.type === 'application/pdf') {
-        setFileType('pdf');
-        setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
-      } else if (file.type.startsWith('image/')) {
-        setFileType('image');
-        setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
-      } else {
-        setFileType('');
-        setPath('');
-      }
-    } else {
-      setFileType('');
-      setPath('');
-    }
-  }, [file, testRun]); */
-
   /*
   In this function we handle the uploading of the files. First check if there are any files.
   If there aren't then we return out of the function. This shouldn't even be possible to get since
