@@ -48,6 +48,7 @@ class Server {
             val devPromptFile = File("dev_prompt.txt")
             val userPromptFile = File("user_prompt.txt")
             val turnToJsonFile = File("turn_to_json.txt")
+            val venvPath = "${System.getProperty("user.dir")}/venv"
 
             val output = if (testRun) {
                 // Run the Python script once during test runs
@@ -56,7 +57,7 @@ class Server {
                     devPromptFile = devPromptFile,
                     userPromptFile = userPromptFile,
                     testRun = true,
-                    expectJson = true
+                    expectJson = true,
                 )
             } else {
                 // First prompt execution
@@ -65,7 +66,7 @@ class Server {
                     devPromptFile = devPromptFile,
                     userPromptFile = userPromptFile,
                     testRun = false,
-                    expectJson = false
+                    expectJson = false,
                 )
 
                 // Save intermediate output to a file
@@ -80,7 +81,7 @@ class Server {
                     devPromptFile = turnToJsonFile,
                     userPromptFile = intermediateFile,
                     testRun = false,
-                    expectJson = true
+                    expectJson = true,
                 )
             }
 
