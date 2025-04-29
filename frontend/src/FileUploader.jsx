@@ -7,14 +7,14 @@ const FileUploader = ({ testRun }) => {
   const [data, setData] = useState([]);
 
   //Path for post request
-  const path = `http://localhost:8080/testRun=${testRun.toString()}`
+  const path = `http://localhost:8080/files?testRun=${testRun.toString()}`
 
   /*
   In this function we handle the uploading of the files. First check if there are any files.
   If there aren't then we return out of the function. This shouldn't even be possible to get since
   upload button is not in the UI if there are no files selected, but just to play it safe it is there.
   
-  Then we make format the formdata. We go through it in a for loop to append each file we have selected to it.
+  Then we make format the formdata. We go through it in a foreach loop to append each file we have selected to it.
   After that we send the post request to the backend with the formdata and wait for the result.
   Once we get the result we set the response data into our data state and use it to showcase what the AI
   found in the invoices.
@@ -27,9 +27,9 @@ const FileUploader = ({ testRun }) => {
     setStatus('uploading');
 
     const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append(`file${i + 1}`, files);
-    }
+    Array.from(files).forEach(file => {
+      formData.append('files', file);
+    });
 
     try {
       const response = await fetch(path, {
