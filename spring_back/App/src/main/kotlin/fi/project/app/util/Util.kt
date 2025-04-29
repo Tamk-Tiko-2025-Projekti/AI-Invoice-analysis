@@ -8,6 +8,12 @@ import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+
+
 /**
  * Converts a PDF file to an image using a Python script.
  * The script is executed as a subprocess, and the output is saved in the same directory as the PDF.
@@ -245,6 +251,62 @@ fun verifyBarCode(data: StorageInfo): String {
         data.appendToLogFile("Barcode verification successful:\n$output")
         println("Barcode verification output:\n$output")
         return output
+    }
+}
+
+fun compareBarCodeData(data: String, barcodeData: String, storage: StorageInfo): String {
+    val trimmedBarCode = barcodeData.trimIndent()
+
+    // Try to find the JSON object in the barcode data
+    val startIndex = trimmedBarCode.indexOf("{")
+    val endIndex = trimmedBarCode.indexOf("}")
+    // If the JSON object is not found, the process will not continue
+    if (startIndex == -1 || endIndex == -1) {
+        storage.appendToLogFile("Invalid JSON format in barcode data.")
+        return data
+    }
+    // JSON data is extracted
+    val jsonString = trimmedBarCode.substring(startIndex, endIndex + 1)
+
+    val mapper = ObjectMapper().registerKotlinModule()
+    val barcodeNode = mapper.readTree(jsonString)
+    val dataNode = mapper.readTree(data)
+    val contentNode = dataNode.get("content")
+    if (contentNode == null) {
+        storage.appendToLogFile("No content field found in data.")
+        return data
+    }
+    // Takes the common fields from both json objects
+    val commonFields = barcodeNode.fieldNames().asSequence().toSet()
+        .intersect(contentNode.fieldNames().asSequence().toSet())
+
+    var differenceArray = mutableListOf<String>()
+    for (field in commonFields) {
+        val barcodeValue = barcodeNode.get(field).asText().replace(" ", "")
+        val dataValue = contentNode.get(field).asText().replace(" ", "")
+        if (barcodeValue != dataValue) {
+            differenceArray.add(field)
+        }
+    }
+    if (differenceArray.isEmpty()) {
+        storage.appendToLogFile("No differences found between barcode and data.")
+        return data
+    } else {
+        if (dataNode is ObjectNode) {
+            val validationArray: ArrayNode = mapper.createArrayNode()
+            for (diff in differenceArray) {
+                validationArray.add(diff)
+            }
+            dataNode.set<ArrayNode>("validation", validationArray)
+
+            val modifiedData = mapper.writeValueAsString(dataNode)
+            storage.appendToLogFile("Differences found in barcode validation:\n${differenceArray.joinToString("\n")}")
+            storage.appendToLogFile("Modified data with validation field:\n$modifiedData")
+            return modifiedData
+        } else {
+            storage.appendToLogFile("Data is not an ObjectNode.")
+            return data
+        }
     }
 }
 
