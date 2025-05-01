@@ -10,6 +10,7 @@ import fi.project.app.util.pdfPreProcessing
 import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
 import fi.project.app.util.verifyBarCode
+import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -53,7 +54,7 @@ class Server {
             val turnToJsonFile = File("turn_to_json.txt")
             val venvPath = "${System.getProperty("user.dir")}/venv"
 
-            val output = if (testRun) {
+            var output = if (testRun) {
                 // Run the Python script once during test runs
                 PythonProcess.runScript(
                     imageFile = processedFile,
@@ -92,8 +93,9 @@ class Server {
             storageInfo.appendToLogFile("JSON output: $output")
 
             try {
-                val output: String = verifyBarCode(storageInfo)
-                // TODO: verify the AI output with the barcode data
+                val barCodeOutput: String = verifyBarCode(storageInfo)
+                // This method will not be called if the barcode verification fails
+                output = compareBarCodeData(output, barCodeOutput, storageInfo) // Output validation-field is updated if the barcode data does not match
             } catch (e: Exception) {
                 println("Error verifying barcode:\n${e.message}")
                 storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
