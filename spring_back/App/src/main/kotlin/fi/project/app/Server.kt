@@ -56,7 +56,6 @@ class Server {
                 val devPromptFile = File("dev_prompt.txt")
                 val userPromptFile = File("user_prompt.txt")
                 val turnToJsonFile = File("turn_to_json.txt")
-                val venvPath = "${System.getProperty("user.dir")}/venv"
 
                 ensureActive() // Check if the coroutine is still active
 
@@ -79,6 +78,12 @@ class Server {
                         expectJson = false,
                     )
 
+                    if (firstOutput.isEmpty()) {
+                        throw RuntimeException("First prompt output is empty")
+                    }
+                    if (firstOutput.contains("Error")) {
+                        throw RuntimeException("First prompt output contains error: $firstOutput")
+                    }
                     ensureActive() // Check if the coroutine is still active
 
                     // Save intermediate output to a file
@@ -101,6 +106,13 @@ class Server {
 
                 println("Second prompt output: $output")
                 storageInfo.appendToLogFile("JSON output: $output")
+
+                if (output.isEmpty()) {
+                    throw RuntimeException("Second prompt output is empty")
+                }
+                if (output.contains("Error")) {
+                    throw RuntimeException("Second prompt output contains error: $output")
+                }
 
                 try {
                     val barCodeOutput: String = verifyBarCode(storageInfo)
