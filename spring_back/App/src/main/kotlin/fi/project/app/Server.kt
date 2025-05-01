@@ -17,15 +17,6 @@ import kotlinx.coroutines.*
 @RestController
 @RequestMapping("/")
 class Server {
-
-    // Endpoint to check if the server is running
-//    @GetMapping("/")
-//    fun hello(): String {
-//        return "Hello World!"
-//    }
-
-    // Core function to process uploaded files
-    private fun processFile(
     /**
      * Processes the uploaded file and then runs the Python scripts that handle sending the file to the LLM.
      * @param file The uploaded file (should an image, if the original file is a PDF, it should be converted to an image first).
@@ -39,6 +30,7 @@ class Server {
      * - File: The processed file to be used in the Python script.
      * @return A string containing the output from the LLM.
      */
+    private suspend fun processFile(
         file: MultipartFile, // Uploaded file
         testRun: Boolean, // Flag to indicate if this is a test run
         preProcessing: ((File, StorageInfo) -> File)? = null // Optional preprocessing step
@@ -139,7 +131,6 @@ class Server {
         @RequestParam("image") file: MultipartFile, // Uploaded image file
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<String> {
-//        return processFile(file, testRun)
         try {
             return ResponseEntity(processFile(file, testRun), HttpStatus.OK)
         } catch (e: Exception) {
@@ -147,6 +138,7 @@ class Server {
             return ResponseEntity(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+    */
 
     /**
      * NOTE: This endpoint is not used in the current version of the application.
@@ -165,9 +157,6 @@ class Server {
         @RequestParam("pdf") file: MultipartFile, // Uploaded PDF file
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<String> {
-//        return processFile(file, testRun) { pdfFile, storageInfo ->
-//            pdfPreProcessing(pdfFile, storageInfo)
-//        }
         try {
             return ResponseEntity(processFile(file, testRun) { pdfFile, storageInfo ->
                 pdfPreProcessing(pdfFile, storageInfo)
@@ -177,6 +166,7 @@ class Server {
             return ResponseEntity(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+     */
 
     /**
      * Endpoint to process multiple files.
