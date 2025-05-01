@@ -14,7 +14,7 @@ function App() {
         <h1>Laskutuksen automatisointi</h1>
         <h2>
           Hyväksyy kuvia sekä pdf tiedostoja <br />
-          Valitse tiedosto, paina upload, saa JSON dataa
+          Valitse tiedosto(t), paina upload, saa JSON dataa
         </h2>
       </div>
       <FileUploader testRun={options.testRun} />
