@@ -22,7 +22,7 @@ const FileUploader = ({ testRun }) => {
   If the response is not ok then we just empty the data array and display an error message.
    */
   async function handleFileUpload() {
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
     setStatus('uploading');
 
