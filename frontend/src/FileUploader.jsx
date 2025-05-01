@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import DisplayData from './DisplayData';
 
-const FileUploader = ({ testRun }) => {
+const FileUploader = ({testRun}) => {
   const [files, setFiles] = useState(null);
   const [status, setStatus] = useState('idle');
   const [data, setData] = useState([]);
@@ -39,7 +39,18 @@ const FileUploader = ({ testRun }) => {
       if (response.ok) {
         const result = await response.json();
         console.log('Result:', result);
-        setData(result);
+        const parsedData = result.map(item => {
+          if (typeof item === 'string') {
+            try {
+              return JSON.parse(item);
+            } catch (error) {
+              console.error('Error parsing JSON:', error);
+              return null;
+            }
+          }
+          return item;
+        });
+        setData(parsedData);
         setStatus('success');
       } else {
         setData([]);
@@ -52,7 +63,9 @@ const FileUploader = ({ testRun }) => {
 
   return (
     <div>
-      <input type="file" onChange={(e) => { setFiles(e.target.files) }} accept="image/*, .pdf" multiple />
+      <input type="file" onChange={(e) => {
+        setFiles(e.target.files)
+      }} accept="image/*, .pdf" multiple/>
 
       {files && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
@@ -60,11 +73,11 @@ const FileUploader = ({ testRun }) => {
 
       {status === 'uploading' && <p>Uploading...</p>}
 
-      {status === 'error' && files.length == 1 && <p>Error uploading the file</p>}
+      {status === 'error' && files.length === 1 && <p>Error uploading the file</p>}
       {status === 'error' && files.length > 1 && <p>Error uploading the files</p>}
 
       {status === 'success' && (
-        <DisplayData data={data} />
+        <DisplayData data={data}/>
       )}
     </div>
   );
