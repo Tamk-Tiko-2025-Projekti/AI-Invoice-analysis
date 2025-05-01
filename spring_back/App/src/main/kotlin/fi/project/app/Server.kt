@@ -11,10 +11,7 @@ import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
 import fi.project.app.util.verifyBarCode
 import fi.project.app.util.compareBarCodeData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 
 @RestController
@@ -29,6 +26,19 @@ class Server {
 
     // Core function to process uploaded files
     private fun processFile(
+    /**
+     * Processes the uploaded file and then runs the Python scripts that handle sending the file to the LLM.
+     * @param file The uploaded file (should an image, if the original file is a PDF, it should be converted to an image first).
+     * @param testRun Flag to indicate if this is a test run.
+     * @param preProcessing An optional function to preprocess the file before running the Python script.
+     * This can be used to convert PDF files to images or perform other preprocessing tasks.
+     * The function receives two arguments:
+     * - File: The file to be processed.
+     * - StorageInfo: An object containing information about the storage location of the file.
+     * The function should return:
+     * - File: The processed file to be used in the Python script.
+     * @return A string containing the output from the LLM.
+     */
         file: MultipartFile, // Uploaded file
         testRun: Boolean, // Flag to indicate if this is a test run
         preProcessing: ((File, StorageInfo) -> File)? = null // Optional preprocessing step
@@ -111,7 +121,19 @@ class Server {
         }
     }
 
-    // Endpoint to process image files
+
+    /**
+     * NOTE: This endpoint is not used in the current version of the application.
+     * Endpoint to process image files.
+     * This endpoint accepts an image file, and sends it to the LLM for processing.
+     * The endpoint supports test runs, where the file is otherwise processed, but it is not sent to the LLM.
+     * @Param image Uploaded image file. Note: must be named "image" in the form-data.
+     * @Param testRun Flag to indicate if this is a test run.
+     * @return ResponseEntity with the result of the processing and an HTTP status code.
+     * If the processing is successful, the result is a JSON string containing the output of the processing, and the status code is 200 OK.
+     * In case of an error, the result is a string containing the error message, and the status code is 500 Internal Server Error.
+     */
+    /*
     @PostMapping("/image")
     fun postImage(
         @RequestParam("image") file: MultipartFile, // Uploaded image file
@@ -126,7 +148,18 @@ class Server {
         }
     }
 
-    // Endpoint to process PDF files
+    /**
+     * NOTE: This endpoint is not used in the current version of the application.
+     * Endpoint to process PDF files.
+     * This endpoint accepts a PDF file, converts it to an image and then sends it to the LLM for processing.
+     * The endpoint supports test runs, where the file is otherwise processed, but it is not sent to the LLM.
+     * @Param pdf Uploaded PDF file. Note: must be named "pdf" in the form-data.
+     * @Param testRun Flag to indicate if this is a test run.
+     * @return ResponseEntity with the result of the processing and an HTTP status code.
+     * If the processing is successful, the result is a JSON string containing the output of the processing, and the status code is 200 OK.
+     * In case of an error, the result is a string containing the error message, and the status code is 500 Internal Server Error.
+     */
+    /*
     @PostMapping("/pdf")
     fun postPDF(
         @RequestParam("pdf") file: MultipartFile, // Uploaded PDF file
@@ -145,6 +178,13 @@ class Server {
         }
     }
 
+    /**
+     * Endpoint to process multiple files.
+     * This endpoint accepts a list of PDF and/or image files, and processes them concurrently, using coroutines.
+     * The endpoint supports test runs, where the files are otherwise processed, but they are not sent to the LLM.
+     * @Param files List of uploaded files. Note: must be named "files" in the form-data.
+     * @Param testRun Flag to indicate if this is a test run.
+     */
     @PostMapping("/files")
     fun postMultipleFiles(
         @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
