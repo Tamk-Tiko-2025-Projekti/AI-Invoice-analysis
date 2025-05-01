@@ -2,10 +2,9 @@ import base64
 import sys
 import json
 import os
+import signal
 from openai import OpenAI
 from dotenv import load_dotenv
-
-
 
 # Parse command-line arguments
 image_path = sys.argv[1]
@@ -13,6 +12,13 @@ dev_prompt_path = sys.argv[2]
 user_prompt_path = sys.argv[3]
 test_run = sys.argv[4].lower() == "true"
 expect_json = sys.argv[5].lower() == "true"
+
+TIMEOUT_SECONDS = 60
+
+
+def timeout_handler(signum, frame):
+    raise TimeoutError(f"API request timed out (>{TIMEOUT_SECONDS} seconds)")
+
 
 # Function to encode the image
 def encode_image(path):
@@ -25,6 +31,7 @@ def encode_image(path):
     except Exception as e:
         print(f"Error reading file: {e}")
         sys.exit(1)
+
 
 # If not test run, read developer and user prompts from file
 if not test_run:
@@ -47,36 +54,47 @@ base64_image = None
 if image_path != "-":
     base64_image = encode_image(image_path)
 
+
 # Function to send API request
 def make_api_request():
     # Load environment variables
-    load_dotenv()
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(TIMEOUT_SECONDS)  # Set timeout
+    try:
+        # TODO: remove this
+        raise TimeoutError  # Simulate a timeout for testing
+        load_dotenv()
+        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-    user_content = [{"type": "text", "text": user_prompt}]
-    if base64_image:
-        user_content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{base64_image}",
-            },
-        })
+        user_content = [{"type": "text", "text": user_prompt}]
+        if base64_image:
+            user_content.append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}",
+                },
+            })
 
-    completion = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "developer",
-                "content": [{"type": "text", "text": dev_prompt}],
-            },
-            {
-                "role": "user",
-                "content": user_content,
-            }
-        ],
-    )
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "developer",
+                    "content": [{"type": "text", "text": dev_prompt}],
+                },
+                {
+                    "role": "user",
+                    "content": user_content,
+                }
+            ],
+        )
 
-    return completion.choices[0].message.content
+        signal.alarm(0)  # Cancel timeout
+        return completion.choices[0].message.content
+    except TimeoutError:
+        print(f"Error: API request timed out after {TIMEOUT_SECONDS} seconds.")
+        sys.exit(1)
+
 
 # Use test response or make real API call
 if test_run:
