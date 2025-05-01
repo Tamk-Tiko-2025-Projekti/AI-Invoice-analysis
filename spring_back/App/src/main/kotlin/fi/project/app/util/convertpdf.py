@@ -15,6 +15,8 @@ try:
     images = convert_from_path(input_pdf, dpi=90, fmt="webp")
     images[0].save(output_path, 'WEBP')
     print(f"Successfully saved to {output_path}")
+    os.remove(input_pdf) # Remove the original PDF file
+    
 except Exception as e:
     print(f"Conversion failed: {str(e)}")
     sys.exit(1)
