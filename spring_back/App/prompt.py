@@ -61,8 +61,6 @@ def make_api_request():
     signal.signal(signal.SIGALRM, timeout_handler)
     signal.alarm(TIMEOUT_SECONDS)  # Set timeout
     try:
-        # TODO: remove this
-        raise TimeoutError  # Simulate a timeout for testing
         load_dotenv()
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
