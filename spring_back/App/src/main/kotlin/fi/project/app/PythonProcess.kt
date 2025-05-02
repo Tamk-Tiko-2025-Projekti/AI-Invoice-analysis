@@ -61,12 +61,10 @@ class PythonProcess {
                 throw RuntimeException("Error running Python script: ${e.message}")
             } finally {
                 // Cleanup logic for temporary files can be added here if needed.
-                /*
-                imageFile?.let {
-                    println("Deleting temporary image file: ${it.absolutePath}")
-                    it.delete()
-                }
-                */
+//                imageFile?.let {
+//                    println("Deleting temporary image file: ${it.absolutePath}")
+//                    it.delete()
+//                }
             }
         }
     }

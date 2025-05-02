@@ -2,14 +2,21 @@ import React, { useState } from 'react';
 import './DisplayData.css'
 
 export default function DisplayData({ data }) {
-  const [editableData, setEditableData] = useState(data.content);
-  const [errors, setErrors] = useState([]);
+  const [activeTab, setActiveTab] = useState(0);
+  const [editableData, setEditableData] = useState(data.map(item => item.content));
 
-  const handleInputChange = (e, field) => {
-    setEditableData({
-      ...editableData,
+  /*
+  In this function we handle the changes of text fields. First we assign our editableData into updatedData variable.
+  Then we make changes to updatedData when we change text in the text fields. After that we set the updatedData
+  into editableData.
+   */
+  const handleInputChange = (e, field, index) => {
+    const updatedData = [...editableData];
+    updatedData[index] = {
+      ...updatedData[index],
       [field]: e.target.value,
-    });
+    };
+    setEditableData(updatedData);
   };
 
   //All the possible fields for JSON
@@ -42,69 +49,40 @@ export default function DisplayData({ data }) {
     { label: 'Payable account code', key: 'payable_account_code' },
   ];
 
-  //Required fields for Fennoa POST request (Bank Reference / - Message in validateFields function)
-  const requiredFields = [
-    'purchase_invoice_type_id',
-    'purchase_supplier_id',
-    'supplier_name',
-    'invoice_date',
-    'due_date',
-    'bank_account',
-    'bank_bic',
-    'total_gross',
-  ];
-
-  const validateFields = () => {
-    let isValid = true;
-    const checkErrors = {};
-
-    requiredFields.forEach((field) => {
-      const value = editableData[field];
-      if (value == null || value == "") {
-        checkErrors[field] = `${field} is required!`
-        isValid = false;
-      }
-    });
-
-    const bankReference = editableData['bank_reference'];
-    const bankMessage = editableData['bank_message'];
-
-    if ((bankReference && bankMessage) || (!bankReference && !bankMessage)) {
-      checkErrors['bank_reference'] = 'Either Bank Reference or Bank Message is required! Not both!';
-      checkErrors['bank_message'] = 'Either Bank Reference or Bank Message is required! Not both!';
-      isValid = false;
-    }
-
-    setErrors(checkErrors);
-    return isValid;
-  }
-
-  const handleSubmit = () => {
-    if (validateFields()) {
-      alert("All required fields are filled!");
-    } else {
-      alert("Please fill all the required fields!");
-    }
-  }
+  //Simple function to track on which tab we are
+  const handleTabClick = (index) => {
+    setActiveTab(index);
+  };
 
   return (
-    <div className='display-data'>
-      <h2>JSON data</h2>
-      <div className='fields-container'>
+    <div className="display-data">
+      <div className="tabs">
+        {data.map((_, index) => (
+          <button
+            key={index}
+            className={activeTab === index ? 'active-tab' : ''}
+            onClick={() => handleTabClick(index)}
+          >
+            File {index + 1}
+          </button>
+        ))}
+      </div>
+
+      <h2>AI Data</h2>
+
+      <div className="fields-container">
         {fields.map(({ label, key }) => (
           <label key={key}>
             {label}:
             <input
               type="text"
-              value={editableData[key] || ''}
-              size={(editableData[key]?.length || 1) + 1}
-              onChange={(e) => handleInputChange(e, key)}
+              value={editableData[activeTab][key] || ''}
+              size={(editableData[activeTab][key]?.length || 1) + 1}
+              onChange={(e) => handleInputChange(e, key, activeTab)}
             />
-            {errors[key] && <span style={{ color: 'red', fontSize: '0.9rem' }}>{errors[key]}</span>}
           </label>
         ))}
       </div>
-      <button onClick={handleSubmit}>Validate fields (Submit)</button>
     </div>
   );
 }

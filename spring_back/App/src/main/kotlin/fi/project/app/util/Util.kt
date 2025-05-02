@@ -5,8 +5,6 @@ import java.io.File
 import java.time.Instant
 import java.io.IOException
 import java.nio.file.Paths
-import kotlin.io.path.Path
-import kotlin.io.path.exists
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -230,14 +228,12 @@ fun verifyBarCode(data: StorageInfo): String {
     if (!file.exists()) {
         file = File(path, data.file.name)
     }
-    // Determine the Python command based on the operating system
-    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
 
     data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
 
     val processBuilder = ProcessBuilder(
         getPythonInterpreter(),
-        "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
+        "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, de-hardcode this later
         file.absolutePath // Path to the file to be verified
     )
         .redirectErrorStream(true)
@@ -271,7 +267,7 @@ fun compareBarCodeData(data: String, barcodeData: String, storage: StorageInfo):
         storage.appendToLogFile("No content field found in data.")
         return data
     }
-    // Takes the common fields from both json objects
+    // Takes the common fields from both JSON objects
     val commonFields = barcodeNode.fieldNames().asSequence().toSet()
         .intersect(contentNode.fieldNames().asSequence().toSet())
 
@@ -335,12 +331,12 @@ fun getPythonInterpreter(): String {
  */
 fun findVenvDirectory(): File {
     val projectRoot = File(System.getProperty("user.dir"))
-    val possibleLocationgs = listOf(
+    val possibleLocations = listOf(
         projectRoot,
         projectRoot.parentFile,
         File(projectRoot, "spring_back")
     )
-    for (location in possibleLocationgs) {
+    for (location in possibleLocations) {
         val venvDir = File(location, "venv")
         if (venvDir.exists() && venvDir.isDirectory) {
             return venvDir
@@ -348,4 +344,20 @@ fun findVenvDirectory(): File {
     }
     // If no venv directory is found, return the default location
     return File(projectRoot, "venv")
+}
+
+fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
+    println("Running PDF to image conversion...")
+    storageInfo.appendToLogFile("Running PDF to image conversion...")
+
+    // Convert the PDF to an image
+    convertPDFToImage(pdfFile)
+
+    // Check if the converted image exists
+    val outputImage = File(storageInfo.directoryPath, "temp.webp")
+    if (!outputImage.exists()) {
+        storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
+        throw FileNotFoundException("Converted file does not exist")
+    }
+    return outputImage
 }

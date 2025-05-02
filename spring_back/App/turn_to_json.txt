@@ -9,6 +9,10 @@ Just return valid, raw JSON. Nothing else.
 1. **Structure:**
    - Every field must appear *exclusively* in either `content` or `error`, never both.
    - `content` contains *valid* fields (non-empty or with defaults).
+   - All dates must be in the format `DD/MM/YYYY` (e.g., `31/12/2023`).
+     - Days must be valid for the given month (e.g., no `30/02/2023`).
+     - Months must be between `01` and `12`.
+     - Years must be four digits (e.g., `2023`).
    - `error` lists *invalid* fields (missing, empty required fields, or invalid values).
 
 2. **Validation Logic:**

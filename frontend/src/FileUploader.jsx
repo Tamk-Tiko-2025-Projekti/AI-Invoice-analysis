@@ -1,46 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState} from 'react';
 import DisplayData from './DisplayData';
 
-const FileUploader = ({ testRun }) => {
-  const [file, setFile] = useState(null);
-  const [fileType, setFileType] = useState('');
+const FileUploader = ({testRun}) => {
+  const [files, setFiles] = useState(null);
   const [status, setStatus] = useState('idle');
   const [data, setData] = useState([]);
-  const [path, setPath] = useState('')
 
-  useEffect(() => {
-    if (file) {
-      if (file.type === 'application/pdf') {
-        setFileType('pdf');
-        setPath(`http://localhost:8080/pdf?testRun=${testRun.toString()}`);
-      } else if (file.type.startsWith('image/')) {
-        setFileType('image');
-        setPath(`http://localhost:8080/image?testRun=${testRun.toString()}`);
-      } else {
-        setFileType('');
-        setPath('');
-      }
-    } else {
-      setFileType('');
-      setPath('');
-    }
-  }, [file, testRun]);
+  //Path for post request
+  const path = `http://localhost:8080/files?testRun=${testRun.toString()}`
 
-  function handleFileChange(e) {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
-      console.log('Selected file:', e.target.files[0]);
-    }
-  }
+  /*
+  In this function we handle the uploading of the files. First check if there are any files.
+  If there aren't then we return out of the function. This shouldn't even be possible to get since
+  upload button is not in the UI if there are no files selected, but just to play it safe it is there.
+  
+  Then we make format the formdata. We go through it in a foreach loop to append each file we have selected to it.
+  After that we send the post request to the backend with the formdata and wait for the result.
+  Once we get the result we set the response data into our data state and use it to showcase what the AI
+  found in the invoices.
 
+  If the response is not ok then we just empty the data array and display an error message.
+   */
   async function handleFileUpload() {
-    if (!file || !path) return;
+    if (!files || files.length === 0) return;
 
     setStatus('uploading');
 
     const formData = new FormData();
-    formData.append(fileType, file);
-    console.log('FormData:', formData);
+    Array.from(files).forEach(file => {
+      formData.append('files', file);
+    });
 
     try {
       const response = await fetch(path, {
@@ -50,7 +39,18 @@ const FileUploader = ({ testRun }) => {
       if (response.ok) {
         const result = await response.json();
         console.log('Result:', result);
-        setData(result);
+        const parsedData = result.map(item => {
+          if (typeof item === 'string') {
+            try {
+              return JSON.parse(item);
+            } catch (error) {
+              console.error('Error parsing JSON:', error);
+              return null;
+            }
+          }
+          return item;
+        });
+        setData(parsedData);
         setStatus('success');
       } else {
         setData([]);
@@ -63,24 +63,21 @@ const FileUploader = ({ testRun }) => {
 
   return (
     <div>
-      <input type="file" onChange={handleFileChange} accept="image/*, .pdf" />
-      {file && (
-        <div>
-          <p>File name: {file.name}</p>
-          <p>Type: {file.type}</p>
-        </div>
-      )}
+      <input type="file" onChange={(e) => {
+        setFiles(e.target.files)
+      }} accept="image/*, .pdf" multiple/>
 
-      {file && status !== 'uploading' && (
+      {files && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
       )}
 
-      {status === 'uploading' && <p>File is uploading...</p>}
+      {status === 'uploading' && <p>Uploading...</p>}
 
-      {status === 'error' && <p>Error uploading the file</p>}
+      {status === 'error' && files.length === 1 && <p>Error uploading the file</p>}
+      {status === 'error' && files.length > 1 && <p>Error uploading the files</p>}
 
       {status === 'success' && (
-        <DisplayData data={data} />
+        <DisplayData data={data}/>
       )}
     </div>
   );
