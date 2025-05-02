@@ -5,7 +5,6 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 import java.io.File
-import fi.project.app.util.convertPDFToImage
 import fi.project.app.util.pdfPreProcessing
 import fi.project.app.util.createStorage
 import fi.project.app.util.StorageInfo
@@ -135,7 +134,7 @@ class Server {
     /**
      * NOTE: This endpoint is not used in the current version of the application.
      * Endpoint to process image files.
-     * This endpoint accepts an image file, and sends it to the LLM for processing.
+     * This endpoint accepts an image file and sends it to the LLM for processing.
      * The endpoint supports test runs, where the file is otherwise processed, but it is not sent to the LLM.
      * @Param image Uploaded image file. Note: must be named "image" in the form-data.
      * @Param testRun Flag to indicate if this is a test run.
@@ -188,13 +187,13 @@ class Server {
 
     /**
      * Endpoint to process multiple files.
-     * This endpoint accepts a list of PDF and/or image files, and processes them concurrently, using coroutines.
+     * This endpoint accepts a list of PDF and/or image files and processes them concurrently, using coroutines.
      * The endpoint supports test runs, where the files are otherwise processed, but they are not sent to the LLM.
      * @Param files List of uploaded files. Note: must be named "files" in the form-data.
      * @Param testRun Flag to indicate if this is a test run.
      */
     @PostMapping("/files")
-    fun postMultipleFiles(
+    suspend fun postMultipleFiles(
         @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<List<String>> {
