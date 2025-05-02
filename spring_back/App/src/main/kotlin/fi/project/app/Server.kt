@@ -203,9 +203,9 @@ class Server {
             val parentJob = SupervisorJob()
             val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob)
             // Process each file concurrently using coroutines
-            val results = runBlocking {
+            val results = coroutineScope {
                 val deferred = files.map { file ->
-                    coroutineScope.async {
+                    async {
                         try {
                             val fileName = file.originalFilename ?: "unknown"
                             val contentType = file.contentType ?: "unknown"
