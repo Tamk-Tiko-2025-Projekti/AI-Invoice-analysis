@@ -357,7 +357,7 @@ fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
     val outputImage = File(storageInfo.directoryPath, "temp.webp")
     if (!outputImage.exists()) {
         storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
-        throw Exception("Converted file does not exist")
+        throw FileNotFoundException("Converted file does not exist")
     }
     return outputImage
 }
