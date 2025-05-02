@@ -22,9 +22,6 @@ import java.io.FileNotFoundException
  */
 fun convertPDFToImage(pdfFile: File) {
     try {
-        // Determine the Python command based on the operating system
-//        val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
-
         // Get the absolute path of the Python script and the output directory
         val scriptPath = File("src/main/kotlin/fi/project/app/util/convertpdf.py").absolutePath
         val outputDir = pdfFile.parentFile.absolutePath
@@ -41,7 +38,7 @@ fun convertPDFToImage(pdfFile: File) {
 
         // Throw an exception if the process fails
         if (!success) {
-            throw RuntimeException("Conversion failed:\n$output\n$error")
+            throw RuntimeException(output + "\n" + error)
         }
     } catch (e: Exception) {
         throw RuntimeException("Failed to convert PDF: ${e.message}")
