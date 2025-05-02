@@ -237,7 +237,7 @@ fun verifyBarCode(data: StorageInfo): String {
 
     val processBuilder = ProcessBuilder(
         getPythonInterpreter(),
-        "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, dehardcode this later
+        "src/main/kotlin/fi/project/app/util/readBarCode.py", // Path to the readBarCode.py script, de-hardcode this later
         file.absolutePath // Path to the file to be verified
     )
         .redirectErrorStream(true)
@@ -271,7 +271,7 @@ fun compareBarCodeData(data: String, barcodeData: String, storage: StorageInfo):
         storage.appendToLogFile("No content field found in data.")
         return data
     }
-    // Takes the common fields from both json objects
+    // Takes the common fields from both JSON objects
     val commonFields = barcodeNode.fieldNames().asSequence().toSet()
         .intersect(contentNode.fieldNames().asSequence().toSet())
 
@@ -335,12 +335,12 @@ fun getPythonInterpreter(): String {
  */
 fun findVenvDirectory(): File {
     val projectRoot = File(System.getProperty("user.dir"))
-    val possibleLocationgs = listOf(
+    val possibleLocations = listOf(
         projectRoot,
         projectRoot.parentFile,
         File(projectRoot, "spring_back")
     )
-    for (location in possibleLocationgs) {
+    for (location in possibleLocations) {
         val venvDir = File(location, "venv")
         if (venvDir.exists() && venvDir.isDirectory) {
             return venvDir
