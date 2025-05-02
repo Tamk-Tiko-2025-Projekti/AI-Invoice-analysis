@@ -57,8 +57,6 @@ class Server {
                 val userPromptFile = File("user_prompt.txt")
                 val turnToJsonFile = File("turn_to_json.txt")
 
-                ensureActive() // Check if the coroutine is still active
-
                 var output = if (testRun) {
                     // Run the Python script once during test runs
                     PythonProcess.runScript(
@@ -84,7 +82,6 @@ class Server {
                     if (firstOutput.contains("Error")) {
                         throw RuntimeException("First prompt output contains error: $firstOutput")
                     }
-                    ensureActive() // Check if the coroutine is still active
 
                     // Save intermediate output to a file
                     val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
@@ -92,7 +89,7 @@ class Server {
                     storageInfo.appendToLogFile("Writing first output to Intermediate.txt")
                     intermediateFile.writeText(firstOutput)
 
-                    // Second prompt execution to generate final JSON output
+                    // Second prompt execution to generate the final JSON output
                     PythonProcess.runScript(
                         imageFile = null,
                         devPromptFile = turnToJsonFile,
@@ -101,8 +98,6 @@ class Server {
                         expectJson = true,
                     )
                 }
-
-                ensureActive() // Check if the coroutine is still active
 
                 println("Second prompt output: $output")
                 storageInfo.appendToLogFile("JSON output: $output")
