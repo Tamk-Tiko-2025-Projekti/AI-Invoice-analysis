@@ -199,11 +199,9 @@ class Server {
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<List<Map<String, Any>>> {
         println("Received ${files.size} files")
-        val parentJob = SupervisorJob()
-        val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob)
         // Process each file concurrently using coroutines
-        val results = coroutineScope {
-            val deferred = files.map { file ->
+        val results = withContext(Dispatchers.IO) {
+            files.map { file ->
                 async {
                     try {
                         val fileName = file.originalFilename ?: "unknown"
@@ -239,12 +237,7 @@ class Server {
                         )
                     }
                 }
-            }
-            try {
-                deferred.awaitAll()
-            } finally {
-                parentJob.cancel() // Cancel the parent job to clean up resources
-            }
+            }.awaitAll()
         }
         println("Processed ${files.size} files")
         // Return the results as a response
