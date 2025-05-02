@@ -308,13 +308,17 @@ fun compareBarCodeData(data: String, barcodeData: String, storage: StorageInfo):
  */
 fun getPythonInterpreter(): String {
     val venvDir = findVenvDirectory()
-    val pythonInterpreter = if (System.getProperty("os.name").lowercase().contains("windows")) {
-        File(venvDir, "Scripts/python.exe").absolutePath
-    } else {
-        File(venvDir, "bin/python3").absolutePath
+    try {
+        val pythonInterpreter = if (System.getProperty("os.name").lowercase().contains("windows")) {
+            File(venvDir, "Scripts/python.exe").absolutePath
+        } else {
+            File(venvDir, "bin/python3").absolutePath
+        }
+        println("Python interpreter path: $pythonInterpreter")
+        return pythonInterpreter
+    } catch (e: Exception) {
+        throw RuntimeException("Failed to find Python interpreter in virtual environment: ${e.message}")
     }
-    println("Python interpreter path: $pythonInterpreter")
-    return pythonInterpreter
 }
 
 /**
