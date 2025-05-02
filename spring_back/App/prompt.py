@@ -2,7 +2,7 @@ import base64
 import sys
 import json
 import os
-import signal
+# import signal
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -13,12 +13,11 @@ user_prompt_path = sys.argv[3]
 test_run = sys.argv[4].lower() == "true"
 expect_json = sys.argv[5].lower() == "true"
 
-TIMEOUT_SECONDS = 60
 
+# TIMEOUT_SECONDS = 60
 
-def timeout_handler(signum, frame):
-    raise TimeoutError(f"API request timed out (>{TIMEOUT_SECONDS} seconds)")
-
+# def timeout_handler(signum, frame):
+#     raise TimeoutError(f"API request timed out (>{TIMEOUT_SECONDS} seconds)")
 
 # Function to encode the image
 def encode_image(path):
@@ -57,10 +56,11 @@ if image_path != "-":
 
 # Function to send API request
 def make_api_request():
-    # Load environment variables
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(TIMEOUT_SECONDS)  # Set timeout
+    # This code only works on UNIX systems
+    # signal.signal(signal.SIGALRM, timeout_handler)
+    # signal.alarm(TIMEOUT_SECONDS)  # Set timeout
     try:
+        # Load environment variables
         load_dotenv()
         client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
@@ -87,7 +87,7 @@ def make_api_request():
             ],
         )
 
-        signal.alarm(0)  # Cancel timeout
+        # signal.alarm(0)  # Cancel timeout
         return completion.choices[0].message.content
     except TimeoutError:
         print(f"Error: API request timed out after {TIMEOUT_SECONDS} seconds.")
