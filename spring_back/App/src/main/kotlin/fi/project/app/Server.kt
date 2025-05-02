@@ -12,6 +12,7 @@ import fi.project.app.util.verifyBarCode
 import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.*
 import com.fasterxml.jackson.databind.ObjectMapper
+import kotlin.random.Random
 
 
 @RestController
@@ -39,95 +40,93 @@ class Server {
         println("Test run: $testRun")
         println("Thread: ${Thread.currentThread().name}")
 
-        return withContext(Dispatchers.IO) {
-            try {
-                // Create storage for the uploaded file
-                val storageInfo = createStorage(file)
-                storageInfo.appendToLogFile("Received file: ${file.originalFilename}")
+        try {
+            // Create storage for the uploaded file
+            val storageInfo = createStorage(file)
+            storageInfo.appendToLogFile("Received file: ${file.originalFilename}")
 
-                // Apply preprocessing if provided
-                val processedFile = preProcessing?.invoke(storageInfo.file, storageInfo) ?: storageInfo.file
+            // Apply preprocessing if provided
+            val processedFile = preProcessing?.invoke(storageInfo.file, storageInfo) ?: storageInfo.file
 
-                println("Running Python script on: ${processedFile.absolutePath}")
-                storageInfo.appendToLogFile("Running Python script on: ${processedFile.name}")
+            println("Running Python script on: ${processedFile.absolutePath}")
+            storageInfo.appendToLogFile("Running Python script on: ${processedFile.name}")
 
-                // Prompt files
-                //TODO:move to better place
-                val devPromptFile = File("dev_prompt.txt")
-                val userPromptFile = File("user_prompt.txt")
-                val turnToJsonFile = File("turn_to_json.txt")
+            // Prompt files
+            //TODO:move to better place
+            val devPromptFile = File("dev_prompt.txt")
+            val userPromptFile = File("user_prompt.txt")
+            val turnToJsonFile = File("turn_to_json.txt")
 
-                var output = if (testRun) {
-                    // Run the Python script once during test runs
-                    PythonProcess.runScript(
-                        imageFile = processedFile,
-                        devPromptFile = devPromptFile,
-                        userPromptFile = userPromptFile,
-                        testRun = true,
-                        expectJson = true,
-                    )
-                } else {
-                    // First prompt execution
-                    val firstOutput = PythonProcess.runScript(
-                        imageFile = processedFile,
-                        devPromptFile = devPromptFile,
-                        userPromptFile = userPromptFile,
-                        testRun = false,
-                        expectJson = false,
-                    )
+            var output = if (testRun) {
+                // Run the Python script once during test runs
+                PythonProcess.runScript(
+                    imageFile = processedFile,
+                    devPromptFile = devPromptFile,
+                    userPromptFile = userPromptFile,
+                    testRun = true,
+                    expectJson = true,
+                )
+            } else {
+                // First prompt execution
+                val firstOutput = PythonProcess.runScript(
+                    imageFile = processedFile,
+                    devPromptFile = devPromptFile,
+                    userPromptFile = userPromptFile,
+                    testRun = false,
+                    expectJson = false,
+                )
 
-                    if (firstOutput.isEmpty()) {
-                        throw RuntimeException("First prompt output is empty")
-                    }
-                    if (firstOutput.contains("Error")) {
-                        throw RuntimeException("First prompt output contains error: $firstOutput")
-                    }
-
-                    // Save intermediate output to a file
-                    val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
-                    println("First part done, writing to Intermediate.txt")
-                    storageInfo.appendToLogFile("Writing first output to Intermediate.txt")
-                    intermediateFile.writeText(firstOutput)
-
-                    // Second prompt execution to generate the final JSON output
-                    PythonProcess.runScript(
-                        imageFile = null,
-                        devPromptFile = turnToJsonFile,
-                        userPromptFile = intermediateFile,
-                        testRun = false,
-                        expectJson = true,
-                    )
+                if (firstOutput.isEmpty()) {
+                    throw RuntimeException("First prompt output is empty")
+                }
+                if (firstOutput.contains("Error")) {
+                    throw RuntimeException("First prompt output contains error: $firstOutput")
                 }
 
-                println("Second prompt output: $output")
-                storageInfo.appendToLogFile("JSON output: $output")
+                // Save intermediate output to a file
+                val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
+                println("First part done, writing to Intermediate.txt")
+                storageInfo.appendToLogFile("Writing first output to Intermediate.txt")
+                intermediateFile.writeText(firstOutput)
 
-                if (output.isEmpty()) {
-                    throw RuntimeException("Second prompt output is empty")
-                }
-                if (output.contains("Error")) {
-                    throw RuntimeException("Second prompt output contains error: $output")
-                }
-
-                try {
-                    val barCodeOutput: String = verifyBarCode(storageInfo)
-                    // This method will not be called if the barcode verification fails
-                    output = compareBarCodeData(
-                        output,
-                        barCodeOutput,
-                        storageInfo
-                    ) // Output validation-field is updated if the barcode data does not match
-                } catch (e: Exception) {
-                    println("Error verifying barcode:\n${e.message}")
-                    storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
-                }
-                // Return the final output as a response
-                output
-            } catch (e: Exception) {
-                // Handle exceptions and return an error response
-                e.printStackTrace()
-                throw RuntimeException("Error processing file: ${e.message}")
+                // Second prompt execution to generate the final JSON output
+                PythonProcess.runScript(
+                    imageFile = null,
+                    devPromptFile = turnToJsonFile,
+                    userPromptFile = intermediateFile,
+                    testRun = false,
+                    expectJson = true,
+                )
             }
+
+            println("Second prompt output: $output")
+            storageInfo.appendToLogFile("JSON output: $output")
+
+            if (output.isEmpty()) {
+                throw RuntimeException("Second prompt output is empty")
+            }
+            if (output.contains("Error")) {
+                throw RuntimeException("Second prompt output contains error: $output")
+            }
+
+            try {
+                val barCodeOutput: String = verifyBarCode(storageInfo)
+                // This method will not be called if the barcode verification fails
+                output = compareBarCodeData(
+                    output,
+                    barCodeOutput,
+                    storageInfo
+                ) // Output validation-field is updated if the barcode data does not match
+            } catch (e: Exception) {
+                println("Error verifying barcode:\n${e.message}")
+                storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
+            }
+            // Return the final output as a response
+            return output
+        } catch (e: Exception) {
+            // Handle exceptions and return an error response
+            e.printStackTrace()
+            throw RuntimeException(e.message)
         }
     }
 
