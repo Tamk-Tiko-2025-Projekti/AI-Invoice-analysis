@@ -5,8 +5,6 @@ import java.io.File
 import java.time.Instant
 import java.io.IOException
 import java.nio.file.Paths
-import kotlin.io.path.Path
-import kotlin.io.path.exists
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -230,8 +228,6 @@ fun verifyBarCode(data: StorageInfo): String {
     if (!file.exists()) {
         file = File(path, data.file.name)
     }
-    // Determine the Python command based on the operating system
-    val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
 
     data.appendToLogFile("Verifying barcode for file: ${data.file.name}")
 
