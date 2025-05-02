@@ -324,10 +324,10 @@ fun getPythonInterpreter(): String {
 /**
  * Attempts to find the python virtual environment directory.
  * Checks several possible locations:
- * - The current working directory
- * - The parent directory of the current working directory
- * - A subdirectory named "spring_back" in the current working directory
- * If none of these locations contain a "venv" directory, it defaults to the current working directory.
+ * - The current working directory.
+ * - The parent directory of the current working directory.
+ * - A subdirectory named "spring_back" in the current working directory.
+ * If none of these locations contains a "venv" directory, it defaults to the current working directory.
  *
  * @return The File object representing the venv directory.
  */
@@ -348,7 +348,7 @@ fun findVenvDirectory(): File {
     return File(projectRoot, "venv")
 }
 
-fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
+fun pdfPreProcessing(pdfFile: File, storageInfo: StorageInfo): File {
     println("Running PDF to image conversion...")
     storageInfo.appendToLogFile("Running PDF to image conversion...")
 
@@ -359,7 +359,7 @@ fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
     val outputImage = File(storageInfo.directoryPath, "temp.webp")
     if (!outputImage.exists()) {
         storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
-        throw FileNotFoundException("Converted file does not exist")
+        throw FileNotFoundException("Could not find image converted from PDF file")
     }
     return outputImage
 }
