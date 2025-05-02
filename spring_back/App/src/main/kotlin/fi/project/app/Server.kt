@@ -11,6 +11,7 @@ import fi.project.app.util.StorageInfo
 import fi.project.app.util.verifyBarCode
 import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.*
+import com.fasterxml.jackson.databind.ObjectMapper
 
 
 @RestController
@@ -196,52 +197,58 @@ class Server {
     suspend fun postMultipleFiles(
         @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
-    ): ResponseEntity<List<String>> {
+    ): ResponseEntity<List<Map<String, Any>>> {
         println("Received ${files.size} files")
-        try {
-            val parentJob = SupervisorJob()
-            val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob)
-            // Process each file concurrently using coroutines
-            val results = coroutineScope {
-                val deferred = files.map { file ->
-                    async {
-                        try {
-                            val fileName = file.originalFilename ?: "unknown"
-                            val contentType = file.contentType ?: "unknown"
-                            when {
-                                file.contentType == "application/pdf" -> {
-                                    // Process PDF files
-                                    processFile(file, testRun) { pdfFile, storageInfo ->
-                                        pdfPreProcessing(pdfFile, storageInfo)
-                                    }
-                                }
-                                file.contentType?.startsWith("image/") == true -> {
-                                    // Process image files
-                                    processFile(file, testRun)
-                                }
-                                else -> {
-                                    throw IllegalArgumentException("Unsupported file type: ${file.contentType}")
+        val parentJob = SupervisorJob()
+        val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob)
+        // Process each file concurrently using coroutines
+        val results = coroutineScope {
+            val deferred = files.map { file ->
+                async {
+                    try {
+                        val fileName = file.originalFilename ?: "unknown"
+                        val contentType = file.contentType ?: "unknown"
+                        val output = when {
+                            file.contentType == "application/pdf" -> {
+                                // Process PDF files
+                                processFile(file, testRun) { pdfFile, storageInfo ->
+                                    pdfPreProcessing(pdfFile, storageInfo)
                                 }
                             }
-                        } catch (e: Exception) {
-                            println("Error processing file ${file.originalFilename}: ${e.message}")
-                            "Error processing file ${file.originalFilename}: ${e.message}"
+
+                            file.contentType?.startsWith("image/") == true -> {
+                                // Process image files
+                                processFile(file, testRun)
+                            }
+
+                            else -> {
+                                throw IllegalArgumentException("Unsupported file type: ${file.contentType}")
+                            }
                         }
+                        val objectMapper = ObjectMapper()
+                        val jsonOutput = objectMapper.readValue(output, Map::class.java) as Map<String, Any>
+                        println("Processed file ${file.originalFilename}: $jsonOutput")
+                        jsonOutput
+                    } catch (e: Exception) {
+                        println("Error processing file ${file.originalFilename}: ${e.message}")
+                        mapOf(
+                            "content" to emptyMap<String, Any>(),
+                            "error" to mapOf(
+                                "message" to "Error processing file: ${file.originalFilename}: ${e.message}",
+                            )
+                        )
                     }
                 }
-                try {
-                    deferred.awaitAll()
-                } finally {
-                    parentJob.cancel() // Cancel the parent job to clean up resources
-                }
             }
-            println("Processed ${files.size} files")
-            // Return the results as a response
-            println("Results: $results")
-            return ResponseEntity(results, HttpStatus.OK)
-        } catch (e: Exception) {
-            println("Error processing files: ${e.message}")
-            return ResponseEntity(listOf("Error processing files: ${e.message}"), HttpStatus.INTERNAL_SERVER_ERROR)
+            try {
+                deferred.awaitAll()
+            } finally {
+                parentJob.cancel() // Cancel the parent job to clean up resources
+            }
         }
+        println("Processed ${files.size} files")
+        // Return the results as a response
+        println("Results: $results")
+        return ResponseEntity(results, HttpStatus.OK)
     }
 }
