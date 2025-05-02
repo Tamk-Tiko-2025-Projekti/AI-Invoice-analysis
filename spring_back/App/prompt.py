@@ -90,7 +90,7 @@ def make_api_request():
         # signal.alarm(0)  # Cancel timeout
         return completion.choices[0].message.content
     except TimeoutError:
-        print(f"Error: API request timed out after {TIMEOUT_SECONDS} seconds.")
+        print("Error: API request timed out.")
         sys.exit(1)
 
 
