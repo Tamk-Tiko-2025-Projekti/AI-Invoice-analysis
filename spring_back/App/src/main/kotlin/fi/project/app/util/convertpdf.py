@@ -20,5 +20,5 @@ try:
         print(f"Failed to delete the original PDF {input_pdf}. Error: {str(delete_error)}")
 
 except Exception as e:
-    print(e)
+    print(f"Conversion failed: {str(e)}")
     sys.exit(1)
