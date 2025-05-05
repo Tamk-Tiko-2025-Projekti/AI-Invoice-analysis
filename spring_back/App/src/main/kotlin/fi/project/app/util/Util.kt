@@ -22,9 +22,6 @@ import java.io.FileNotFoundException
  */
 fun convertPDFToImage(pdfFile: File) {
     try {
-        // Determine the Python command based on the operating system
-//        val pythonCommand = if (System.getProperty("os.name").contains("Windows", ignoreCase = true)) "python" else "python3"
-
         // Get the absolute path of the Python script and the output directory
         val scriptPath = File("src/main/kotlin/fi/project/app/util/convertpdf.py").absolutePath
         val outputDir = pdfFile.parentFile.absolutePath
@@ -41,7 +38,7 @@ fun convertPDFToImage(pdfFile: File) {
 
         // Throw an exception if the process fails
         if (!success) {
-            throw RuntimeException("Conversion failed:\n$output\n$error")
+            throw RuntimeException(output + "\n" + error)
         }
     } catch (e: Exception) {
         throw RuntimeException("Failed to convert PDF: ${e.message}")
@@ -311,22 +308,26 @@ fun compareBarCodeData(data: String, barcodeData: String, storage: StorageInfo):
  */
 fun getPythonInterpreter(): String {
     val venvDir = findVenvDirectory()
-    val pythonInterpreter = if (System.getProperty("os.name").lowercase().contains("windows")) {
-        File(venvDir, "Scripts/python.exe").absolutePath
-    } else {
-        File(venvDir, "bin/python3").absolutePath
+    try {
+        val pythonInterpreter = if (System.getProperty("os.name").lowercase().contains("windows")) {
+            File(venvDir, "Scripts/python.exe").absolutePath
+        } else {
+            File(venvDir, "bin/python3").absolutePath
+        }
+        println("Python interpreter path: $pythonInterpreter")
+        return pythonInterpreter
+    } catch (e: Exception) {
+        throw RuntimeException("Failed to find Python interpreter in virtual environment: ${e.message}")
     }
-    println("Python interpreter path: $pythonInterpreter")
-    return pythonInterpreter
 }
 
 /**
  * Attempts to find the python virtual environment directory.
  * Checks several possible locations:
- * - The current working directory
- * - The parent directory of the current working directory
- * - A subdirectory named "spring_back" in the current working directory
- * If none of these locations contain a "venv" directory, it defaults to the current working directory.
+ * - The current working directory.
+ * - The parent directory of the current working directory.
+ * - A subdirectory named "spring_back" in the current working directory.
+ * If none of these locations contains a "venv" directory, it defaults to the current working directory.
  *
  * @return The File object representing the venv directory.
  */
@@ -347,7 +348,7 @@ fun findVenvDirectory(): File {
     return File(projectRoot, "venv")
 }
 
-fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
+fun pdfPreProcessing(pdfFile: File, storageInfo: StorageInfo): File {
     println("Running PDF to image conversion...")
     storageInfo.appendToLogFile("Running PDF to image conversion...")
 
@@ -358,7 +359,7 @@ fun pdfPreProcessing(pdfFile: File ,storageInfo: StorageInfo): File {
     val outputImage = File(storageInfo.directoryPath, "temp.webp")
     if (!outputImage.exists()) {
         storageInfo.appendToLogFile("Converted file does not exist: ${outputImage.absolutePath}")
-        throw FileNotFoundException("Converted file does not exist")
+        throw FileNotFoundException("Could not find image converted from PDF file")
     }
     return outputImage
 }
