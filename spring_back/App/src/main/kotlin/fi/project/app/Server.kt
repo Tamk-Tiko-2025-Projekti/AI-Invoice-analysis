@@ -79,9 +79,6 @@ class Server {
                 if (firstOutput.isEmpty()) {
                     throw RuntimeException("First prompt output is empty")
                 }
-                if (firstOutput.contains("Error")) {
-                    throw RuntimeException("First prompt output contains error: $firstOutput")
-                }
 
                 // Save intermediate output to a file
                 val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
@@ -104,9 +101,6 @@ class Server {
 
             if (output.isEmpty()) {
                 throw RuntimeException("Second prompt output is empty")
-            }
-            if (output.contains("Error")) {
-                throw RuntimeException("Second prompt output contains error: $output")
             }
 
             try {
