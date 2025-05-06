@@ -15,5 +15,5 @@ try:
     images[0].save(output_path, 'WEBP')
 
 except Exception as e:
-    print(e)
+    print(f"Conversion failed: {str(e)}")
     sys.exit(1)
