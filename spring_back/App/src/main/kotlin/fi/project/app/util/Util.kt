@@ -42,6 +42,13 @@ fun convertPDFToImage(pdfFile: File) {
         }
     } catch (e: Exception) {
         throw RuntimeException("Failed to convert PDF: ${e.message}")
+    } finally {
+        try {
+            println("Deleting PDF file: ${pdfFile.absolutePath}")
+            pdfFile.delete()
+        } catch (e: Exception) {
+            println("Failed to delete PDF file: ${e.message}")
+        }
     }
 }
 
@@ -314,7 +321,6 @@ fun getPythonInterpreter(): String {
         } else {
             File(venvDir, "bin/python3").absolutePath
         }
-        println("Python interpreter path: $pythonInterpreter")
         return pythonInterpreter
     } catch (e: Exception) {
         throw RuntimeException("Failed to find Python interpreter in virtual environment: ${e.message}")

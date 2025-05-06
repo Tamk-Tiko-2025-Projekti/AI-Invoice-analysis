@@ -13,11 +13,6 @@ output_path = os.path.join(output_dir, "temp.webp")
 try:
     images = convert_from_path(input_pdf, dpi=90, fmt="webp")
     images[0].save(output_path, 'WEBP')
-    try:
-        os.remove(input_pdf) # Remove the original PDF file
-        print(f"Original PDF {input_pdf} deleted successfully.")
-    except OSError as delete_error:
-        print(f"Failed to delete the original PDF {input_pdf}. Error: {str(delete_error)}")
 
 except Exception as e:
     print(e)
