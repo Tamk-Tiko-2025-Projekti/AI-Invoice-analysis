@@ -42,6 +42,15 @@ fun convertPDFToImage(pdfFile: File) {
         }
     } catch (e: Exception) {
         throw RuntimeException("Failed to convert PDF: ${e.message}")
+    } finally {
+        try {
+            println("Deleting PDF file: ${pdfFile.absolutePath}")
+            if (!pdfFile.delete()) {
+                println("Warning: Failed to delete PDF file: ${pdfFile.absolutePath}")
+            }
+        } catch (e: Exception) {
+            println("Failed to delete PDF file due to an exception: ${e.message}")
+        }
     }
 }
 
@@ -314,7 +323,6 @@ fun getPythonInterpreter(): String {
         } else {
             File(venvDir, "bin/python3").absolutePath
         }
-        println("Python interpreter path: $pythonInterpreter")
         return pythonInterpreter
     } catch (e: Exception) {
         throw RuntimeException("Failed to find Python interpreter in virtual environment: ${e.message}")
