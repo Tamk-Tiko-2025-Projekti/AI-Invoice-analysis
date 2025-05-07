@@ -124,6 +124,7 @@ class Server {
                 output
             } catch (e: Exception) {
                 // Handle exceptions and return an error response
+                println("Paskas kaatu")
                 e.printStackTrace()
                 throw RuntimeException("Error processing file: ${e.message}")
             }
