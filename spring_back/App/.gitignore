@@ -43,3 +43,6 @@ out/
 temp/
 ### Python virtual environment ###
 /venv/*
+
+### Log files ###
+*.log
