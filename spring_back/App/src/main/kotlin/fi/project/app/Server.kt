@@ -12,6 +12,7 @@ import fi.project.app.util.verifyBarCode
 import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.*
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.io.IOException
 import kotlin.random.Random
 
 
@@ -123,8 +124,8 @@ class Server {
             return output
         } catch (e: Exception) {
             // Handle exceptions and return an error response
-            e.printStackTrace()
-            throw RuntimeException(e.message)
+            println("Error processing file: ${e.message}")
+            throw e
         }
     }
 
@@ -235,9 +236,15 @@ class Server {
                         jsonOutput
                     } catch (e: Exception) {
                         println("Error processing file ${file.originalFilename}: ${e.message}")
+                        val errorType = when (e) {
+                            is IllegalArgumentException -> "Illegal argument error"
+                            is IOException -> "I/O error"
+                            else -> "Unexpected error"
+                        }
                         mapOf(
                             "content" to mapOf<String, Any>("data" to ""),
                             "error" to mapOf(
+                                "type" to errorType,
                                 "message" to "Error processing file: ${file.originalFilename}: ${e.message}",
                             )
                         )
