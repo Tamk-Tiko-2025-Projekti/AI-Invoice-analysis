@@ -92,6 +92,9 @@ def make_api_request():
     except TimeoutError:
         print("Error: API request timed out.")
         sys.exit(1)
+    except Exception as err:
+        print(f"Error: {err}")
+        sys.exit(1)
 
 
 # Use test response or make real API call

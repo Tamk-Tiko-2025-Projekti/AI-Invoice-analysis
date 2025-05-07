@@ -11,6 +11,8 @@ import fi.project.app.util.StorageInfo
 import fi.project.app.util.verifyBarCode
 import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.*
+import com.fasterxml.jackson.databind.ObjectMapper
+import kotlin.random.Random
 
 
 @RestController
@@ -38,96 +40,93 @@ class Server {
         println("Test run: $testRun")
         println("Thread: ${Thread.currentThread().name}")
 
-        return withContext(Dispatchers.IO) {
-            try {
-                // Create storage for the uploaded file
-                val storageInfo = createStorage(file)
-                storageInfo.appendToLogFile("Received file: ${file.originalFilename}")
+        try {
+            // Create storage for the uploaded file
+            val storageInfo = createStorage(file)
+            storageInfo.appendToLogFile("Received file: ${file.originalFilename}")
 
-                // Apply preprocessing if provided
-                val processedFile = preProcessing?.invoke(storageInfo.file, storageInfo) ?: storageInfo.file
+            // Apply preprocessing if provided
+            val processedFile = preProcessing?.invoke(storageInfo.file, storageInfo) ?: storageInfo.file
 
-                println("Running Python script on: ${processedFile.absolutePath}")
-                storageInfo.appendToLogFile("Running Python script on: ${processedFile.name}")
+            println("Running Python script on: ${processedFile.absolutePath}")
+            storageInfo.appendToLogFile("Running Python script on: ${processedFile.name}")
 
-                // Prompt files
-                //TODO:move to better place
-                val devPromptFile = File("dev_prompt.txt")
-                val userPromptFile = File("user_prompt.txt")
-                val turnToJsonFile = File("turn_to_json.txt")
+            // Prompt files
+            //TODO:move to better place
+            val devPromptFile = File("dev_prompt.txt")
+            val userPromptFile = File("user_prompt.txt")
+            val turnToJsonFile = File("turn_to_json.txt")
 
-                var output = if (testRun) {
-                    // Run the Python script once during test runs
-                    PythonProcess.runScript(
-                        imageFile = processedFile,
-                        devPromptFile = devPromptFile,
-                        userPromptFile = userPromptFile,
-                        testRun = true,
-                        expectJson = true,
-                    )
-                } else {
-                    // First prompt execution
-                    val firstOutput = PythonProcess.runScript(
-                        imageFile = processedFile,
-                        devPromptFile = devPromptFile,
-                        userPromptFile = userPromptFile,
-                        testRun = false,
-                        expectJson = false,
-                    )
+            var output = if (testRun) {
+                // Run the Python script once during test runs
+                PythonProcess.runScript(
+                    imageFile = processedFile,
+                    devPromptFile = devPromptFile,
+                    userPromptFile = userPromptFile,
+                    testRun = true,
+                    expectJson = true,
+                )
+            } else {
+                // First prompt execution
+                val firstOutput = PythonProcess.runScript(
+                    imageFile = processedFile,
+                    devPromptFile = devPromptFile,
+                    userPromptFile = userPromptFile,
+                    testRun = false,
+                    expectJson = false,
+                )
 
-                    if (firstOutput.isEmpty()) {
-                        throw RuntimeException("First prompt output is empty")
-                    }
-                    if (firstOutput.contains("Error")) {
-                        throw RuntimeException("First prompt output contains error: $firstOutput")
-                    }
-
-                    // Save intermediate output to a file
-                    val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
-                    println("First part done, writing to Intermediate.txt")
-                    storageInfo.appendToLogFile("Writing first output to Intermediate.txt")
-                    intermediateFile.writeText(firstOutput)
-
-                    // Second prompt execution to generate the final JSON output
-                    PythonProcess.runScript(
-                        imageFile = null,
-                        devPromptFile = turnToJsonFile,
-                        userPromptFile = intermediateFile,
-                        testRun = false,
-                        expectJson = true,
-                    )
+                if (firstOutput.isEmpty()) {
+                    throw RuntimeException("First prompt output is empty")
+                }
+                if (firstOutput.contains("Error")) {
+                    throw RuntimeException("First prompt output contains error: $firstOutput")
                 }
 
-                println("Second prompt output: $output")
-                storageInfo.appendToLogFile("JSON output: $output")
+                // Save intermediate output to a file
+                val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
+                println("First part done, writing to Intermediate.txt")
+                storageInfo.appendToLogFile("Writing first output to Intermediate.txt")
+                intermediateFile.writeText(firstOutput)
 
-                if (output.isEmpty()) {
-                    throw RuntimeException("Second prompt output is empty")
-                }
-                if (output.contains("Error")) {
-                    throw RuntimeException("Second prompt output contains error: $output")
-                }
-
-                try {
-                    val barCodeOutput: String = verifyBarCode(storageInfo)
-                    // This method will not be called if the barcode verification fails
-                    output = compareBarCodeData(
-                        output,
-                        barCodeOutput,
-                        storageInfo
-                    ) // Output validation-field is updated if the barcode data does not match
-                } catch (e: Exception) {
-                    println("Error verifying barcode:\n${e.message}")
-                    storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
-                }
-                // Return the final output as a response
-                output
-            } catch (e: Exception) {
-                // Handle exceptions and return an error response
-                println("Paskas kaatu")
-                e.printStackTrace()
-                throw RuntimeException("Error processing file: ${e.message}")
+                // Second prompt execution to generate the final JSON output
+                PythonProcess.runScript(
+                    imageFile = null,
+                    devPromptFile = turnToJsonFile,
+                    userPromptFile = intermediateFile,
+                    testRun = false,
+                    expectJson = true,
+                )
             }
+
+            println("Second prompt output: $output")
+            storageInfo.appendToLogFile("JSON output: $output")
+
+            if (output.isEmpty()) {
+                throw RuntimeException("Second prompt output is empty")
+            }
+            if (output.contains("Error")) {
+                throw RuntimeException("Second prompt output contains error: $output")
+            }
+
+            try {
+                val barCodeOutput: String = verifyBarCode(storageInfo)
+                // This method will not be called if the barcode verification fails
+                output = compareBarCodeData(
+                    output,
+                    barCodeOutput,
+                    storageInfo
+                ) // Output validation-field is updated if the barcode data does not match
+            } catch (e: Exception) {
+                println("Error verifying barcode:\n${e.message}")
+                storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
+            }
+            // Return the final output as a response
+            return output
+        } catch (e: Exception) {
+            // Handle exceptions and return an error response
+            e.printStackTrace()
+            throw RuntimeException(e.message)
         }
     }
 
@@ -197,52 +196,51 @@ class Server {
     suspend fun postMultipleFiles(
         @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
-    ): ResponseEntity<List<String>> {
+    ): ResponseEntity<List<Map<String, Any>>> {
         println("Received ${files.size} files")
-        try {
-            val parentJob = SupervisorJob()
-            val coroutineScope = CoroutineScope(Dispatchers.IO + parentJob)
-            // Process each file concurrently using coroutines
-            val results = coroutineScope {
-                val deferred = files.map { file ->
-                    async {
-                        try {
-                            val fileName = file.originalFilename ?: "unknown"
-                            val contentType = file.contentType ?: "unknown"
-                            when {
-                                file.contentType == "application/pdf" -> {
-                                    // Process PDF files
-                                    processFile(file, testRun) { pdfFile, storageInfo ->
-                                        pdfPreProcessing(pdfFile, storageInfo)
-                                    }
-                                }
-                                file.contentType?.startsWith("image/") == true -> {
-                                    // Process image files
-                                    processFile(file, testRun)
-                                }
-                                else -> {
-                                    throw IllegalArgumentException("Unsupported file type: ${file.contentType}")
+        // Process each file concurrently using coroutines
+        val results = withContext(Dispatchers.IO) {
+            files.map { file ->
+                async {
+                    try {
+                        val fileName = file.originalFilename ?: "unknown"
+                        val contentType = file.contentType ?: "unknown"
+                        val output = when {
+                            file.contentType == "application/pdf" -> {
+                                // Process PDF files
+                                processFile(file, testRun) { pdfFile, storageInfo ->
+                                    pdfPreProcessing(pdfFile, storageInfo)
                                 }
                             }
-                        } catch (e: Exception) {
-                            println("Error processing file ${file.originalFilename}: ${e.message}")
-                            "Error processing file ${file.originalFilename}: ${e.message}"
+
+                            file.contentType?.startsWith("image/") == true -> {
+                                // Process image files
+                                processFile(file, testRun)
+                            }
+
+                            else -> {
+                                throw IllegalArgumentException("Unsupported file type: ${file.contentType}")
+                            }
                         }
+                        val objectMapper = ObjectMapper()
+                        val jsonOutput = objectMapper.readValue(output, Map::class.java) as Map<String, Any>
+                        println("Processed file ${file.originalFilename}: $jsonOutput")
+                        jsonOutput
+                    } catch (e: Exception) {
+                        println("Error processing file ${file.originalFilename}: ${e.message}")
+                        mapOf(
+                            "content" to emptyMap<String, Any>(),
+                            "error" to mapOf(
+                                "message" to "Error processing file: ${file.originalFilename}: ${e.message}",
+                            )
+                        )
                     }
                 }
-                try {
-                    deferred.awaitAll()
-                } finally {
-                    parentJob.cancel() // Cancel the parent job to clean up resources
-                }
-            }
-            println("Processed ${files.size} files")
-            // Return the results as a response
-            println("Results: $results")
-            return ResponseEntity(results, HttpStatus.OK)
-        } catch (e: Exception) {
-            println("Error processing files: ${e.message}")
-            return ResponseEntity(listOf("Error processing files: ${e.message}"), HttpStatus.INTERNAL_SERVER_ERROR)
+            }.awaitAll()
         }
+        println("Processed ${files.size} files")
+        // Return the results as a response
+        println("Results: $results")
+        return ResponseEntity(results, HttpStatus.OK)
     }
 }

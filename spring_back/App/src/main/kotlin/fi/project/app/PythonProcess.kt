@@ -4,7 +4,10 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
-// This class is responsible for executing a Python script with specified arguments.
+/**
+ * This class is responsible for executing a Python script with the provided arguments.
+ * It uses the ProcessBuilder class to build a process for running the Python script.
+ */
 class PythonProcess {
     companion object {
         /**
@@ -47,12 +50,16 @@ class PythonProcess {
 
                 // Configure the process builder to execute the Python script.
                 val processBuilder = ProcessBuilder(args)
-                processBuilder.redirectErrorStream(true) // Redirect error stream to the output stream.
+                processBuilder.redirectErrorStream(true) // Redirect the error stream to the output stream.
                 val process = processBuilder.start() // Start the process.
 
                 // Read the output of the Python script.
                 val output = BufferedReader(InputStreamReader(process.inputStream)).readText()
-                process.waitFor() // Wait for the process to complete.
+                val success = process.waitFor() == 0// Wait for the process to complete.
+                if (!success) {
+                    // If the process fails, print the error output and throw a runtime exception.
+                    throw RuntimeException(output)
+                }
 
                 return output // Return the script's output.
             } catch (e: Exception) {
