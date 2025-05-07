@@ -11,10 +11,10 @@ function App() {
   return (
     <>
       <div>
-        <h1>Laskutuksen automatisointi</h1>
+        <h1>Automation of invoicing</h1>
         <h2>
-          Hyväksyy kuvia sekä pdf tiedostoja <br />
-          Valitse tiedosto(t), paina upload, saa JSON dataa
+          Only accepts pdf and photo files <br />
+          Choose the file(s), press upload, get data
         </h2>
       </div>
       <FileUploader testRun={options.testRun} />

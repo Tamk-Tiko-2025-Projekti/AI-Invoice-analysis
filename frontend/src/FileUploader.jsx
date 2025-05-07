@@ -1,13 +1,25 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import DisplayData from './DisplayData';
 
-const FileUploader = ({testRun}) => {
+const FileUploader = ({ testRun }) => {
   const [files, setFiles] = useState(null);
+  const [fileNames, setFileNames] = useState([]);
   const [status, setStatus] = useState('idle');
   const [data, setData] = useState([]);
 
   //Path for post request
   const path = `http://localhost:8080/files?testRun=${testRun.toString()}`
+
+  /*
+  File input on change event function. Here we setFiles to the selected files
+  and also map the file names into setFileNames state, so we can display
+  the file names in DisplayData component
+   */
+  const handleFileSelection = (e) => {
+    const selectedFiles = e.target.files;
+    setFiles(selectedFiles);
+    setFileNames(Array.from(selectedFiles).map((file) => file.name));
+  }
 
   /*
   In this function we handle the uploading of the files. First check if there are any files.
@@ -29,6 +41,7 @@ const FileUploader = ({testRun}) => {
     const formData = new FormData();
     Array.from(files).forEach(file => {
       formData.append('files', file);
+
     });
 
     try {
@@ -63,9 +76,12 @@ const FileUploader = ({testRun}) => {
 
   return (
     <div>
-      <input type="file" onChange={(e) => {
-        setFiles(e.target.files)
-      }} accept="image/*, .pdf" multiple/>
+      <input
+        type="file"
+        onChange={handleFileSelection}
+        accept="image/*, .pdf"
+        multiple
+      />
 
       {files && status !== 'uploading' && (
         <button onClick={handleFileUpload}>Upload</button>
@@ -77,7 +93,7 @@ const FileUploader = ({testRun}) => {
       {status === 'error' && files.length > 1 && <p>Error uploading the files</p>}
 
       {status === 'success' && (
-        <DisplayData data={data}/>
+        <DisplayData data={data} fileNames={fileNames} />
       )}
     </div>
   );
