@@ -96,8 +96,8 @@ fun saveFile(file: MultipartFile, path: String): File {
 fun createStorage(file: MultipartFile, baseDir: String = "temp"): StorageInfo {
     // Generate a unique directory name
     val timeStamp = Instant.now().toEpochMilli()
-    val randomLetter = ('a'..'z').random()
-    val dirName = "$timeStamp-$randomLetter"
+    val randomLetters = (1..3).map { ('a'..'z').random() }.joinToString("")
+    val dirName = "$timeStamp-$randomLetters"
 
     // Resolve the base directory relative to the project root
     val projectRoot = Paths.get("").toAbsolutePath().toFile()
