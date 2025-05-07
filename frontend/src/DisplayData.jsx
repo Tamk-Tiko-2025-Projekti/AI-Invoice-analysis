@@ -74,15 +74,22 @@ export default function DisplayData({ data, fileNames }) {
         ))}
       </div>
 
-      {errorData[activeTab] ? (
-        <div className="error-container">
-          <h2>
-            {errorData[activeTab].message ? errorData[activeTab].message : errorData[activeTab]}
-          </h2>
-        </div>
-      ) : (
         <>
           <h2>{fileNames[activeTab]}</h2>
+          {Object.keys(errorData[activeTab]).length > 0 && errorData[activeTab] !== "" ? (
+          <div className="error-container">
+            <h2>
+              System errors or potentially missing/false fields:
+            </h2>
+            <ul>
+              {Object.keys(errorData[activeTab]).map((key, index) => (
+                <li key={index}>
+                  {key}: {errorData[activeTab][key]}
+                </li>
+              ))}
+            </ul>
+          </div>
+            ) : null}
           <div className="fields-container">
             {fields.map(({ label, key }) => (
               <label key={key}>
@@ -97,7 +104,7 @@ export default function DisplayData({ data, fileNames }) {
             ))}
           </div>
         </>
-      )}
+      {/*// )}*/}
     </div>
   );
 }
