@@ -14,6 +14,9 @@ import kotlinx.coroutines.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
 import kotlin.random.Random
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 
 @RestController
@@ -37,9 +40,8 @@ class Server {
         testRun: Boolean, // Flag to indicate if this is a test run
         preProcessing: ((File, StorageInfo) -> File)? = null // Optional preprocessing step
     ): String {
-        println("Received file: ${file.originalFilename}")
-        println("Test run: $testRun")
-        println("Thread: ${Thread.currentThread().name}")
+        logger.info{"Received file: ${file.originalFilename}"}
+        logger.info{"Test run: $testRun"}
 
         if (file.isEmpty) {
             throw IllegalArgumentException("File is empty")
@@ -53,8 +55,7 @@ class Server {
             // Apply preprocessing if provided
             val processedFile = preProcessing?.invoke(storageInfo.file, storageInfo) ?: storageInfo.file
 
-            println("Running Python script on: ${processedFile.absolutePath}")
-            storageInfo.appendToLogFile("Running Python script on: ${processedFile.name}")
+            logger.info{"Running Python script on: ${processedFile.absolutePath}"}
 
             // Prompt files
             //TODO:move to better place
@@ -87,7 +88,6 @@ class Server {
 
                 // Save intermediate output to a file
                 val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
-                println("First part done, writing to Intermediate.txt")
                 storageInfo.appendToLogFile("Writing first output to Intermediate.txt")
                 intermediateFile.writeText(firstOutput)
 
@@ -101,7 +101,6 @@ class Server {
                 )
             }
 
-            println("Second prompt output: $output")
             storageInfo.appendToLogFile("JSON output: $output")
 
             if (output.isEmpty()) {
@@ -116,15 +115,16 @@ class Server {
                     barCodeOutput,
                     storageInfo
                 ) // Output validation-field is updated if the barcode data does not match
+                logger.info{"Barcode verification process finished."}
             } catch (e: Exception) {
-                println("Error verifying barcode:\n${e.message}")
+                logger.error{"Error verifying barcode for file: ${file.originalFilename}:\n${e.message}"}
                 storageInfo.appendToLogFile("Error verifying barcode:\n${e.message}")
             }
             // Return the final output as a response
             return output
         } catch (e: Exception) {
             // Handle exceptions and return an error response
-            println("Error processing file: ${e.message}")
+            logger.error{e}
             throw e
         }
     }
@@ -196,7 +196,7 @@ class Server {
         @RequestParam("files") files: List<MultipartFile>, // List of uploaded files
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<List<Map<String, Any>>> {
-        println("Received ${files.size} files")
+        logger.info{"Received ${files.size} files"}
 
         // Check if the list of files is empty
         if (files.isEmpty()) {
@@ -232,10 +232,10 @@ class Server {
                         }
                         val objectMapper = ObjectMapper()
                         val jsonOutput = objectMapper.readValue(output, Map::class.java) as Map<String, Any>
-                        println("Processed file ${file.originalFilename}: $jsonOutput")
+                        logger.info{"Processed file ${file.originalFilename}: $jsonOutput"}
                         jsonOutput
                     } catch (e: Exception) {
-                        println("Error processing file ${file.originalFilename}: ${e.message}")
+                        logger.error{"Error processing file ${file.originalFilename}: ${e.message}"}
                         val errorType = when (e) {
                             is IllegalArgumentException -> "Illegal argument error"
                             is IOException -> "I/O error"
@@ -252,9 +252,9 @@ class Server {
                 }
             }.awaitAll()
         }
-        println("Processed ${files.size} files")
+        logger.info{"Processed ${files.size} files"}
         // Return the results as a response
-        println("Results: $results")
+        logger.info{"Results: $results"}
         return ResponseEntity(results, HttpStatus.OK)
     }
 }
