@@ -31,6 +31,8 @@ dependencies {
 	implementation("org.reactivestreams:reactive-streams:1.0.4")
 	implementation("com.fasterxml.jackson.core:jackson-databind:2.19.0")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.0")
+	implementation("io.github.microutils:kotlin-logging:3.0.5")
+	implementation("ch.qos.logback:logback-classic:1.5.18")
 }
 
 kotlin {

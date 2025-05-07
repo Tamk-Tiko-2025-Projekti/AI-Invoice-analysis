@@ -260,10 +260,22 @@ fun verifyBarCode(data: StorageInfo): String {
 fun compareBarCodeData(data: String, barcodeData: String, storage: StorageInfo): String {
     val trimmedBarCode = barcodeData.trimIndent()
 
+    // Try to find the JSON object in the barcode data
+    val startIndex = trimmedBarCode.indexOf("{")
+    val endIndex = trimmedBarCode.indexOf("}")
+
+    // If the JSON object is not found, the process will not continue
+    if (startIndex == -1 || endIndex == -1) {
+        storage.appendToLogFile("Invalid JSON format in barcode data.")
+        return data
+    }
+    // JSON data is extracted
+     val jsonString = trimmedBarCode.substring(startIndex, endIndex + 1)
+
     // Attempt to parse the barcode data as JSON
     val mapper = ObjectMapper().registerKotlinModule()
     val barcodeNode = try {
-        mapper.readTree(trimmedBarCode)
+        mapper.readTree(jsonString)
     } catch (e: Exception) {
         storage.appendToLogFile("Invalid JSON format in barcode data: ${e.message}")
         return data
