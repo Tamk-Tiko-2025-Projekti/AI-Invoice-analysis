@@ -40,6 +40,10 @@ class Server {
         println("Test run: $testRun")
         println("Thread: ${Thread.currentThread().name}")
 
+        if (file.isEmpty) {
+            throw IllegalArgumentException("File is empty")
+        }
+
         try {
             // Create storage for the uploaded file
             val storageInfo = createStorage(file)
