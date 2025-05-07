@@ -116,7 +116,9 @@ if test_run:
             "total_gross": 1234.56,
             "currency": "EUR"
         },
-        "error": {}
+        "error": {
+            "message": "This is a test response and not a real API call."
+        }
     }
     """
 else:
