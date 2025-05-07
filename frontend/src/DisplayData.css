@@ -5,6 +5,25 @@
   justify-content: center;
 }
 
+.display-data h2 {
+  margin: 0;
+  padding: 10px;
+  text-align: center;
+  font-size: 1.5rem;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fields-container {
+  margin-top: 20px;
+  display: flex;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 label {
   display: flex;
   flex-direction: column;
@@ -38,4 +57,10 @@ button {
 
 .tabs button.active-tab {
   background-color: #007bff;
+}
+
+.error-container h2 {
+  padding: 10;
+  color: red;
+  white-space: normal;
 }
