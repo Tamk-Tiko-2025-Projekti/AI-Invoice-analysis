@@ -76,7 +76,9 @@ export default function DisplayData({ data, fileNames }) {
 
       {errorData[activeTab] ? (
         <div className="error-container">
-          <h2>{errorData[activeTab]}</h2>
+          <h2>
+            {errorData[activeTab].message ? errorData[activeTab].message : errorData[activeTab]}
+          </h2>
         </div>
       ) : (
         <>
