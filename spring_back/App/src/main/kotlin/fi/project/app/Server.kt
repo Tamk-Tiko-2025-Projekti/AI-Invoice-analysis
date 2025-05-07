@@ -236,7 +236,7 @@ class Server {
                     } catch (e: Exception) {
                         println("Error processing file ${file.originalFilename}: ${e.message}")
                         mapOf(
-                            "content" to emptyMap<String, Any>(),
+                            "content" to mapOf<String, Any>("data" to ""),
                             "error" to mapOf(
                                 "message" to "Error processing file: ${file.originalFilename}: ${e.message}",
                             )
