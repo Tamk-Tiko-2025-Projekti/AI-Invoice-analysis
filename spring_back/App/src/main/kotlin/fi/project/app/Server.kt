@@ -196,6 +196,15 @@ class Server {
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<List<Map<String, Any>>> {
         println("Received ${files.size} files")
+
+        // Check if the list of files is empty
+        if (files.isEmpty()) {
+            return ResponseEntity(
+                listOf(mapOf("error" to mapOf("message" to "No files provided"))),
+                HttpStatus.BAD_REQUEST
+            )
+        }
+
         // Process each file concurrently using coroutines
         val results = withContext(Dispatchers.IO) {
             files.map { file ->
