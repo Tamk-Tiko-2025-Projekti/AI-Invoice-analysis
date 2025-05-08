@@ -281,7 +281,6 @@ class Server(private val context: ApplicationContext) {
             Thread.sleep(5000)
             (context as ConfigurableApplicationContext).close()
             logger.info{"Server has shut down"}
-            shutdownStarted.set(false)
             exitProcess(0)
         }
 
