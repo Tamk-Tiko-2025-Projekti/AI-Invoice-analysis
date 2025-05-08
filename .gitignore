@@ -3,3 +3,6 @@ node_modules/
 .vscode/
 .idea/
 spring_back/App/src/main/resources/static/
+
+spring_back/logs/
+spring_back/temp/
