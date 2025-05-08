@@ -190,6 +190,10 @@ class Server {
      * The endpoint supports test runs, where the files are otherwise processed, but they are not sent to the LLM.
      * @Param files List of uploaded files. Note: must be named "files" in the form-data.
      * @Param testRun Flag to indicate if this is a test run.
+     * @return ResponseEntity with the result of the processing and an HTTP status code.
+     * If the processing is successful, the result is a list of JSON strings containing the output of the processing for each file, and the status code is 200 OK.
+     * In case of an error, the result will contain one or more error messages in the error field.
+     * The error messages will either correspond to certain fields that the LLM believes or knows to be incorrect, or they will be error messages from the server.
      */
     @PostMapping("/files")
     suspend fun postMultipleFiles(
