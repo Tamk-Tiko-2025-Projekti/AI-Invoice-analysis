@@ -14,6 +14,7 @@ import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import kotlin.random.Random
+import kotlin.system.exitProcess
 import mu.KotlinLogging
 import org.springframework.context.ConfigurableApplicationContext
 import java.util.concurrent.Executors
@@ -262,7 +263,7 @@ class Server(private val context: ApplicationContext) {
 
         // Clears temp folder
         try {
-            logger.warn{"Attempting to clear temp files"}
+            logger.info{"Attempting to clear temp files"}
             val tempDir = File("./temp")
             if (tempDir.exists()) {
                 tempDir.deleteRecursively()
@@ -276,12 +277,15 @@ class Server(private val context: ApplicationContext) {
 
         //delays the server shutdown so that processes can finish
         Executors.newSingleThreadScheduledExecutor().submit {
-            Thread.sleep(5000)
             logger.info{"Server is shutting down in 5 seconds"}
+            Thread.sleep(5000)
             (context as ConfigurableApplicationContext).close()
+            logger.info{"Server has shut down"}
+            shutdownStarted.set(false)
+            exitProcess(0)
         }
 
-        return ResponseEntity("Server is shutting down", HttpStatus.OK)
+        return ResponseEntity("Server has shut down", HttpStatus.OK)
 
     }
 }
