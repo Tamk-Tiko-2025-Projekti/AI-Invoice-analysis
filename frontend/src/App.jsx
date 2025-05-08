@@ -1,6 +1,7 @@
 import './App.css'
 import FileUploader from './FileUploader'
 import Options from "./Options.jsx";
+import KillServer from './KillServer.jsx';
 import { useState } from "react";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
       </div>
       <FileUploader testRun={options.testRun} />
       <Options options={options} setOptions={setOptions} />
+      <KillServer />
     </>
   )
 }

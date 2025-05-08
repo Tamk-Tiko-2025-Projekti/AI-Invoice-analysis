@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
+import org.springframework.context.ApplicationContext
 import java.io.File
 import fi.project.app.util.pdfPreProcessing
 import fi.project.app.util.createStorage
@@ -14,14 +15,20 @@ import kotlinx.coroutines.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.IOException
 import kotlin.random.Random
+import kotlin.system.exitProcess
 import mu.KotlinLogging
+import org.springframework.context.ConfigurableApplicationContext
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val logger = KotlinLogging.logger {}
+private val shutdownStarted = AtomicBoolean(false)
 
 
 @RestController
 @RequestMapping("/")
-class Server {
+class Server(private val context: ApplicationContext) {
+
     /**
      * Processes the uploaded file and then runs the Python scripts that handle sending the file to the LLM.
      * @param file The uploaded file (should an image, if the original file is a PDF, it should be converted to an image first).
@@ -260,5 +267,50 @@ class Server {
         // Return the results as a response
         logger.info{"Results: $results"}
         return ResponseEntity(results, HttpStatus.OK)
+    }
+
+    @PostMapping("/shutdown")
+    fun shutdown(): ResponseEntity<String> {
+
+        if (shutdownStarted.get()) {
+            logger.warn{"Additional shutdown request received while shutdown is already in progress."}
+            return ResponseEntity("Shutdown already in progress", HttpStatus.TOO_MANY_REQUESTS)
+        }
+        shutdownStarted.set(true)
+        logger.warn{"Server shutdown initiated."}
+
+        // Clears temp folder
+        try {
+            logger.info{"Attempting to clear temp files"}
+            val tempDir = File("./temp")
+            if (tempDir.exists()) {
+                tempDir.deleteRecursively()
+                logger.info{"Temporary files cleared"}
+            } else {
+                logger.warn{"Temporary directory does not exist"}
+            }
+        } catch (e: Exception) {
+            logger.error{"Error clearing temporary files: ${e.message}"}
+        }
+
+        //delays the server shutdown so that processes can finish
+        val executor = Executors.newSingleThreadScheduledExecutor()
+        executor.submit {
+            try {
+                logger.info{"Server is shutting down in 5 seconds"}
+                Thread.sleep(5000)
+                (context as ConfigurableApplicationContext).close()
+                logger.info{"Server has shut down"}
+            } catch (e: Exception) {
+                logger.error{"Error during server shutdown: ${e.message}"}
+            } finally {
+                logger.info{"Exiting JVM"}
+                executor.shutdown()
+                exitProcess(0)
+            }
+        }
+
+        return ResponseEntity("Server has shut down", HttpStatus.OK)
+
     }
 }
