@@ -276,12 +276,20 @@ class Server(private val context: ApplicationContext) {
         }
 
         //delays the server shutdown so that processes can finish
-        Executors.newSingleThreadScheduledExecutor().submit {
-            logger.info{"Server is shutting down in 5 seconds"}
-            Thread.sleep(5000)
-            (context as ConfigurableApplicationContext).close()
-            logger.info{"Server has shut down"}
-            exitProcess(0)
+        val executor = Executors.newSingleThreadScheduledExecutor()
+        executor.submit {
+            try {
+                logger.info{"Server is shutting down in 5 seconds"}
+                Thread.sleep(5000)
+                (context as ConfigurableApplicationContext).close()
+                logger.info{"Server has shut down"}
+            } catch (e: Exception) {
+                logger.error{"Error during server shutdown: ${e.message}"}
+            } finally {
+                logger.info{"Exiting JVM"}
+                executor.shutdown()
+                exitProcess(0)
+            }
         }
 
         return ResponseEntity("Server has shut down", HttpStatus.OK)
