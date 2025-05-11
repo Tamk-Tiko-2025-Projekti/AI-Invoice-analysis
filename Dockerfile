@@ -10,7 +10,8 @@ WORKDIR /app
 
 # Install Python and other tools
 RUN apk add --no-cache python3 py3-pip bash curl \
-    poppler poppler-utils
+    poppler poppler-utils \
+    gcc g++ python3-dev
 
 # Copy backend code first
 COPY spring_back/ ./spring_back/
@@ -20,6 +21,7 @@ WORKDIR /app/spring_back/App
 RUN python3 -m venv venv && \
     . ./venv/bin/activate && \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir pydantic && \
     pip install --no-cache-dir -r requirements.txt
 
 # Install Gradle
