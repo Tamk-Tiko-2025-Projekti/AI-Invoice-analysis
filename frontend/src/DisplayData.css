@@ -1,0 +1,66 @@
+.display-data .fields-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  justify-content: center;
+}
+
+.display-data h2 {
+  margin: 0;
+  padding: 10px;
+  text-align: center;
+  font-size: 1.5rem;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fields-container {
+  margin-top: 20px;
+  display: flex;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  max-width: 200px;
+  align-items: center;
+}
+
+input[type="text"] {
+  min-width: 150px;
+  max-width: 100%;
+  padding: 5px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tabs {
+  margin-bottom: 1rem;
+}
+
+.tabs button {
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.tabs button.active-tab {
+  background-color: #007bff;
+}
+
+.error-container h2 {
+  padding: 10;
+  color: red;
+  white-space: normal;
+}

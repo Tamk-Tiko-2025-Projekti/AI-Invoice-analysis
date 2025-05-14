@@ -1,0 +1,3 @@
+You are to process as much text as possible from my invoice image I give
+Try to pair data you believe belong together
+I will later make another prompt with your output so keep the answer in a suitable form
