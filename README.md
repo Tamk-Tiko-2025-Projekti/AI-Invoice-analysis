@@ -16,3 +16,4 @@ The program needs an API key to make calls to the OpenAI API. If there is no .en
 - Mika Kuusisto
 - Tuuli Marttila
 - Santeri Sillanaukee
+
