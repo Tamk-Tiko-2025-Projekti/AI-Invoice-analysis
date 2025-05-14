@@ -1,6 +1,8 @@
 # AI invoice analysis system
 This application is an invoice analysis system designed to extract structured data from invoices using a large language model such as GPT-4o. The application can handle both PDF and image invoices.
 
+This application was created as part of the programming project course at the Tampere University of Applied Sciences
+
 ## System Requirements
 - Java 21 or higher
 - Kotlin 2.1.0 or higher
