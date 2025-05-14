@@ -13,6 +13,7 @@ import fi.project.app.util.verifyBarCode
 import fi.project.app.util.compareBarCodeData
 import kotlinx.coroutines.*
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.io.IOException
 import kotlin.random.Random
 import kotlin.system.exitProcess
 import mu.KotlinLogging
@@ -48,6 +49,10 @@ class Server(private val context: ApplicationContext) {
     ): String {
         logger.info{"Received file: ${file.originalFilename}"}
         logger.info{"Test run: $testRun"}
+
+        if (file.isEmpty) {
+            throw IllegalArgumentException("File is empty")
+        }
 
         try {
             // Create storage for the uploaded file
@@ -87,9 +92,6 @@ class Server(private val context: ApplicationContext) {
                 if (firstOutput.isEmpty()) {
                     throw RuntimeException("First prompt output is empty")
                 }
-                if (firstOutput.contains("Error")) {
-                    throw RuntimeException("First prompt output contains error: $firstOutput")
-                }
 
                 // Save intermediate output to a file
                 val intermediateFile = File(storageInfo.directory, "Intermediate.txt")
@@ -111,9 +113,6 @@ class Server(private val context: ApplicationContext) {
             if (output.isEmpty()) {
                 throw RuntimeException("Second prompt output is empty")
             }
-            if (output.contains("Error")) {
-                throw RuntimeException("Second prompt output contains error: $output")
-            }
 
             try {
                 val barCodeOutput: String = verifyBarCode(storageInfo)
@@ -133,7 +132,7 @@ class Server(private val context: ApplicationContext) {
         } catch (e: Exception) {
             // Handle exceptions and return an error response
             logger.error{e}
-            throw RuntimeException(e.message)
+            throw e
         }
     }
 
@@ -198,6 +197,10 @@ class Server(private val context: ApplicationContext) {
      * The endpoint supports test runs, where the files are otherwise processed, but they are not sent to the LLM.
      * @Param files List of uploaded files. Note: must be named "files" in the form-data.
      * @Param testRun Flag to indicate if this is a test run.
+     * @return ResponseEntity with the result of the processing and an HTTP status code.
+     * If the processing is successful, the result is a list of JSON strings containing the output of the processing for each file, and the status code is 200 OK.
+     * In case of an error, the result will contain one or more error messages in the error field.
+     * The error messages will either correspond to certain fields that the LLM believes or knows to be incorrect, or they will be error messages from the server.
      */
     @PostMapping("/files")
     suspend fun postMultipleFiles(
@@ -205,6 +208,15 @@ class Server(private val context: ApplicationContext) {
         @RequestParam(name = "testRun", required = false, defaultValue = "false") testRun: Boolean // Test run flag
     ): ResponseEntity<List<Map<String, Any>>> {
         logger.info{"Received ${files.size} files"}
+
+        // Check if the list of files is empty
+        if (files.isEmpty()) {
+            return ResponseEntity(
+                listOf(mapOf("error" to mapOf("message" to "No files provided"))),
+                HttpStatus.BAD_REQUEST
+            )
+        }
+
         // Process each file concurrently using coroutines
         val results = withContext(Dispatchers.IO) {
             files.map { file ->
@@ -235,9 +247,15 @@ class Server(private val context: ApplicationContext) {
                         jsonOutput
                     } catch (e: Exception) {
                         logger.error{"Error processing file ${file.originalFilename}: ${e.message}"}
+                        val errorType = when (e) {
+                            is IllegalArgumentException -> "Illegal argument error"
+                            is IOException -> "I/O error"
+                            else -> "Unexpected error"
+                        }
                         mapOf(
-                            "content" to emptyMap<String, Any>(),
+                            "content" to mapOf<String, Any>("data" to ""),
                             "error" to mapOf(
+                                "type" to errorType,
                                 "message" to "Error processing file: ${file.originalFilename}: ${e.message}",
                             )
                         )

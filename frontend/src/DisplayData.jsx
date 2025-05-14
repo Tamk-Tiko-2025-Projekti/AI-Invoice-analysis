@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import './DisplayData.css'
 
-export default function DisplayData({ data }) {
+export default function DisplayData({ data, fileNames }) {
   const [activeTab, setActiveTab] = useState(0);
   const [editableData, setEditableData] = useState(data.map(item => item.content));
+  const errorData = data.map(item => item.error);
 
   /*
   In this function we handle the changes of text fields. First we assign our editableData into updatedData variable.
@@ -54,6 +55,11 @@ export default function DisplayData({ data }) {
     setActiveTab(index);
   };
 
+  /*
+  Returns the file tabs and conditionally returns either error container if there are
+  any errors on that specific tab. If not then it shows the data that the AI was able to get
+  from the file
+  */
   return (
     <div className="display-data">
       <div className="tabs">
@@ -68,21 +74,37 @@ export default function DisplayData({ data }) {
         ))}
       </div>
 
-      <h2>AI Data</h2>
-
-      <div className="fields-container">
-        {fields.map(({ label, key }) => (
-          <label key={key}>
-            {label}:
-            <input
-              type="text"
-              value={editableData[activeTab][key] || ''}
-              size={(editableData[activeTab][key]?.length || 1) + 1}
-              onChange={(e) => handleInputChange(e, key, activeTab)}
-            />
-          </label>
-        ))}
-      </div>
+        <>
+          <h2>{fileNames[activeTab]}</h2>
+          {Object.keys(errorData[activeTab]).length > 0 && errorData[activeTab] !== "" ? (
+          <div className="error-container">
+            <h2>
+              System errors or potentially missing/false fields:
+            </h2>
+            <ul>
+              {Object.keys(errorData[activeTab]).map((key, index) => (
+                <li key={index}>
+                  {key}: {errorData[activeTab][key]}
+                </li>
+              ))}
+            </ul>
+          </div>
+            ) : null}
+          <div className="fields-container">
+            {fields.map(({ label, key }) => (
+              <label key={key}>
+                {label}:
+                <input
+                  type="text"
+                  value={editableData[activeTab][key] || ''}
+                  size={(editableData[activeTab][key]?.length || 1) + 1}
+                  onChange={(e) => handleInputChange(e, key, activeTab)}
+                />
+              </label>
+            ))}
+          </div>
+        </>
+      {/*// )}*/}
     </div>
   );
 }
